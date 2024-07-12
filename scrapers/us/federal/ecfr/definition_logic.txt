@@ -1,0 +1,79 @@
+# Tagged Definitions:
+    # <p class="indent-1" data-title="25.400 “Applicant”" data-term="true"><em class="paragraph-hierarchy">Applicant,</em></p>
+    # Scope is Sibling to <em> : 3
+    # Scope not sibling to <em>: 0
+
+# Inline Definitions:
+    # <em class="paragraph-heading">Definitions.</em>
+    # <em class="paragraph-heading">Definitions for the purposes of this section.</em>
+    # Scope is Sibling to <em> : 2
+    # Scope not sibling to <em>: 1
+    # - Sometimes no class, when in appendix
+
+
+# Definitions By Themselves:
+    # "” means"
+
+
+# Incorporated Terms by References:
+    # "has the meaning given in" - Incorporated by reference.
+    # "defined in " - Incorporated by reference.
+        # - both mostly refers to same corpus (ECFR)
+    # "as provided in" - same corpus
+    # "as defined at" - Mostly different corpus.
+    # "as ammended ("
+
+    # "further clarified by" - Mostly different corpus.
+
+
+# Redefining/Interpreting Terms:
+    # "and also includes" - Occurs After the term is incorporated by reference
+
+# Applicable Scope:
+    # "For purposes of this LEVEL_CLASSIFIER" - Applicable to a level classifier
+    # "As used in this LEVEL_CLASSIFIER" - Applicable to a level classifier
+    # "The following definitions apply" - comes after for purposes of
+
+
+# Section Case - Term in Node Name
+# Subpart I - Definitions, Section TERM - Definitions
+# <h4 data-hierarchy-metadata="">§ 417.935 Disqualified (USDA supplement to governmentwide definition at <a href="/current/title-2/section-180.935" class="cfr external">2 CFR 180.935</a>).</h4>
+    # Ignore anything after "(" in node name to find term. 
+    # NOT TAGGED
+
+# Section Case - "Definition" in Node Name
+    # <em class="paragraph-heading">TERM</em>
+
+# TODO: Accronym sections
+    
+# Case 1: Node Parent is named "Definitions"
+    # TERM is located in node_name, entire section is definition
+    # SCOPE - Default case, not defined in section
+
+# Case 2: Node name is named "Definitions."
+    # TERMS are located in <em> tag
+    # SCOPE - Above first TERM
+
+# Case 3 "Definitions" is in the node name
+    # TERMS are located in <em> tag
+    # SCOPE - Above first TERM
+    # 
+
+# Case 4: Paragraphs are tagged with "data-term"="true"
+    # TERM is located in <em> tag
+    # SCOPE - Most likely above the first TERM
+        # Consider extracting separate scopes
+    
+# 2-3 Can be handled as "DEFAULT" cases
+
+# Case Subdefinitions: Paragraphs are tagged with "data-disable"="true" - Handled
+    # This is a subdefinition
+
+# Case 5: Paragraph contains an <em> Definitions. <em>
+    # All children are to be considered definitions. Could not be tagged. Check after data-term case
+    # SCOPE - sibling of <em> Definitions. <em>
+    # TERM - <em class="paragraph-heading">TERM</em> FOR ALL DIRECT CHILDREN
+
+# Case 6: Paragraph contains an <em> Definitions. <em>
+    # SCOPE, TERM, and DEFINITION are all siblings of <em> Definitions. <em>
+    # Term maybe hard to find?
