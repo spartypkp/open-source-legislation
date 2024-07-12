@@ -1,15 +1,14 @@
-import psycopg2
+
 import os
+DIR = os.path.dirname(os.path.realpath(__file__))
+
 import urllib.request
 from bs4 import BeautifulSoup
-import sys
-DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
+from bs4.element import Tag
+import re
+
 import utils.utilityFunctions as util
 from utils.pydanticModels import NodeID, Node
-import re
-from bs4.element import Tag
 from utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node
 
 import json
