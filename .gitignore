@@ -1,0 +1,16 @@
+.vscode/
+env/
+myenv/
+**/data/
+**/sourceData/
+**/extractedData/
+**/.DS_Store
+**/logs/
+**/log/
+# Any directory named "logs", in any location
+logs/
+# Any file ending in .log
+*.log
+test.json
+config.py
+.env
