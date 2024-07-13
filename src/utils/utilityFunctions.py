@@ -13,14 +13,13 @@ from anthropic.types import MessageParam
 import instructor
 import pydantic
 from pydantic import BaseModel, Field, model_validator
-from utils.pydanticModels import APIParameters, ChatMessage, APIUsage
+
 from datetime import datetime
 import time
 
-
+from src.utils.pydanticModels import APIParameters, ChatMessage, APIUsage
 DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
+
 
 from dotenv import load_dotenv
 import os

@@ -8,12 +8,16 @@ from datetime import date, datetime, time, timedelta
 from functools import wraps
 import datetime
 import re
-import utils.utilityFunctions as util
 import inspect
 
 
 
+
 class NodeID(BaseModel):
+    """
+    Pydantic model to represent the hierarchical id for a Node of legislation.
+    DISALLOWED CHARS: "/", "=", 
+    """
     raw_id: Optional[str]
     component_levels: List[str] = []
     component_classifiers: List[str] = []
@@ -24,12 +28,12 @@ class NodeID(BaseModel):
     @model_validator(mode="after")
     def parse_components(self) -> 'NodeID':
         
-        
         raw_id = self.raw_id
         if raw_id is None:
             # Allow for empty raw_id
             return self
         
+        # Split on "/"
         component_levels = raw_id.split('/')
         component_classifiers = []
         component_numbers = []
@@ -51,6 +55,8 @@ class NodeID(BaseModel):
             if "=" not in level:
                 raise ValueError(f"Invalid level format: {level}")
             classifier, number = level.split('=')
+
+            # TODO: MAKE ALLOWED_LEVELS DYNAMIC FOR EACH JURISDICTION
             if classifier not in ALLOWED_LEVELS:
                 raise ValueError(f"Invalid level classifier: {classifier}")
             component_classifiers.append(classifier)
@@ -66,6 +72,10 @@ class NodeID(BaseModel):
     # Property to get the current level classifier e.g.: SECTION, 10
     @property
     def current_level(self):
+        """
+        Property to get the current level_classifier and number as a tuple (level_classifier, number)
+        Ex: (section, 10)
+        """
         if self.component_levels:
             return self.component_classifiers[-1], self.component_numbers[-1]
             
@@ -74,20 +84,30 @@ class NodeID(BaseModel):
     # Property to get the parent level, and number e.g.: PART, 214
     @property
     def parent_level(self):
+        """
+        Property to get the parent level_classifier and number as a tuple (level_classifier, number)
+        Ex: (part, 214)
+        """
         if len(self.component_levels) > 2:
             return self.component_classifiers[-2], self.component_numbers[-2]
         return None
 
-    # Property to get the ID at any level, e.g TITLE
-
-    def pop_level(self):
+    
+    def pop_level(self) -> 'NodeID':
+        """
+        Remove the last component from the node_id, return updated NodeID
+        """
         # Remove the last component from the node_id
         return NodeID(raw_id='/'.join(self.component_levels[:-1]))
     
-    def search_level(self, level):
+    # Property to get the ID at any level, e.g TITLE
+    def search_for_parent_level(self, level_classifier):
+        """
+        Function to find a parent NodeID by searching for a level_classifier.
+        """
         # Find the component that starts with the level. Then return the raw_id from the start to the found component
         for i, component in enumerate(self.component_levels):
-            if component.startswith(level):
+            if component.startswith(level_classifier):
                 return '/'.join(self.component_levels[:i+1])
         return None
     
@@ -116,29 +136,40 @@ class NodeID(BaseModel):
 
 # ===== Definition Models =====
 class Definition(BaseModel):
+    """
+    Pydantic Model for holding a legal definition for a term.
+    """
     definition: str = Field(..., description="Definition text.")
     subdefinitions: Optional[List['Definition']] = Field(default=None, description="List of subdefinitions. Tuple of (subdefinition paragraph id, subdefinition).")
-    source_section: Optional[str] = Field(..., description="Section ID of the source definition. ie title=10/chapter=1/section=1.1. None if same as the current section.")
-    source_paragraph: str = Field(..., description="Paragraph ID of the source definition. ie 1.1(a)(1)(i)")
+    source_section_id: Optional[str] = Field(..., description="Section ID of the source definition. ie title=10/chapter=1/section=1.1. None if same as the current section.")
+    source_paragraph_id: str = Field(..., description="Paragraph ID of the source definition. ie 1.1(a)(1)(i)")
     source_link: HttpUrl = Field(..., description="URL link to the exact paragraph of the definition.")
     is_subterm: Optional[bool] = Field(default=None, description="Is this definition a subterm of another definition?")
 
 class IncorporatedTerms(BaseModel):
-    
+    """
+    A DefinitionHub can incorporate terms from another DefinitionHub. This is a way to create these linked Terms/Definitions
+    """
     import_source_link: Optional[str] = Field(default=None, description="URL link to the source of the incorporated definition(s).")
     import_source_corpus: Optional[str] = Field(default=None, description="Corpus/Document of the source definition(s). None if same as the current corpus.")
     import_source_id: Optional[str] = Field(default=None, description="Structured identifier for the source of the incorporated definition(s).")
-    terms: Optional[List[str]] = Field(default=None, description="List of terms incorporated from the source. If None, all terms are incorporated.")
+    terms: Optional[List[str]] = Field(default=None, description="List of terms incorporated from the source. If None, all terms/definitions are incorporated.")
     
 class DefinitionHub(BaseModel):
-    local_definitions: Dict[str, Definition] = Field(default={}, description="Dictionary of locally defined terms and definitions.")
-    incorporated_definitions: Optional[List[IncorporatedTerms]] = Field(default_factory=list, description="List of imported terms and definitions, incorporated by references. List of unique sources.")
+    """
+    A Way to attach a hub of Definitions to a given Node. Includes terms defined locally, terms incorporated from elsewhere, as well as the scope of where these terms apply.
+    """
+    local_terms: Dict[str, Definition] = Field(default={}, description="Dictionary of locally defined terms and definitions.")
+    incorporated_terms: Optional[List[IncorporatedTerms]] = Field(default_factory=list, description="List of imported terms and definitions, incorporated by references. List of unique sources.")
     scope: Optional[str] = Field(default=None, description="Scope of the local definitions combined with any incroporated definitions. Where should these new definitions be applied?")
     scope_ids: Optional[List[str]] = Field(default=None, description="Structured identifiers for the targeted scopes of extracted definitions corresponding to the database ids")
 
     
 # ===== Reference Models =====
 class Reference(BaseModel):
+    """
+    TODO
+    """
     
     text: str = Field(..., description="Extracted text of the reference.")
     placeholder: Optional[str] = Field(default=None, description="Placeholder for the reference. ex: [*i*]")
@@ -160,42 +191,38 @@ class ReferenceHub(BaseModel):
 # ===== Node Text Models =====
 class Paragraph(BaseModel):
     index: int = Field(..., description="Index of the paragraph.")
+    parent: str = Field(default="ROOT", description="Parent paragraph ID.")
+    children: Optional[List[str]] = Field(default_factory=list, description="List of child paragraph IDs.")
+
     text: str = Field(..., description="Text content of the paragraph.")
-    parent: str = Field(default="", description="Parent paragraph ID.")
-    children: List[str] = Field(default_factory=list, description="List of child paragraph IDs.")
+    reference_hub: Optional[ReferenceHub] = Field(default=None, description="References associated with the paragraph.")
     classification: Optional[str] = Field(default=None, description="Classification of the paragraph. ex: Definition")
     topic: Optional[str] = Field(default=None, description="Topic of the paragraph. ex: Scope")
-    references: Optional[ReferenceHub] = Field(default=None, description="References associated with the paragraph.")
+   
 
 class NodeText(BaseModel):
+    """
+    Paragraphs - Key: "paragraph_id", value: Paragraph
+    """
     paragraphs: Dict[str, Paragraph] = Field(default={})
-    root_paragraph_id: Optional[str] = Field(default="ROOT", description="ID of the root paragraph.")
-    length: int = Field(default=0, description="Number of paragraphs in the node text.")
-
     
-
-
-
-    def add_paragraph(self, paragraph_id: str, text: str, parent: str, children: Optional[List[str]]):
-        paragraph = Paragraph(index=self.length, text=text, parent=parent, children=children)
-        self.length += 1
-        self.paragraphs[paragraph_id] = paragraph
-        return self
     # Return True if the paragaph already exists
-    def add_paragraph(self, paragraph: Paragraph, paragraph_id: str) -> bool:
+    def add_paragraph(self, text: str, paragraph_id: Optional[str]=None, parent: Optional[str]=None, children: Optional[List[str]]=None, reference_hub: Optional[ReferenceHub]=None, classification: Optional[str]=None, topic: Optional[str]=None) -> bool:
+        """
+        Add a new paragraph to NodeText with a paragraph_id.
+        """
+        if paragraph_id is None:
+            paragraph_id = f"#p-{len(self.paragraphs)}"
+        if parent is None:
+            parent="ROOT"
+        paragraph = Paragraph(index=len(self.paragraphs), parent=parent, children=children, text=text, reference_hub=reference_hub, classification=classification, topic=topic )
         # If the paragraph already exists
         if paragraph_id in self.paragraphs:
             previous_index = self.paragraphs[paragraph_id].index
             
-            # print(f"Previous Index: {previous_index}")
-            # print(f"Current Index: {paragraph.index}")
-
             # If the paragraph already exists at the same index, combine the paragraphs
             if previous_index == paragraph.index-1:
-                #print(f"Paragraph already exists at index {paragraph.index}. Combining paragraphs.")
-                #print(f"Previous Text: {self.paragraphs[paragraph_id].text}")
-                #print(f"New Text: {paragraph.text}")
-                
+               
                 self.paragraphs[paragraph_id].text += f"\n{paragraph.text}"
                 # Optionally override the classification and topic
                 if paragraph.classification:
@@ -205,11 +232,11 @@ class NodeText(BaseModel):
                 # Optionally combine the new references
                 if paragraph.references:
                     # If the paragraph already has references, combine the new references with the existing references
-                    if self.paragraphs[paragraph_id].references:
-                        self.paragraphs[paragraph_id].references = self.paragraphs[paragraph_id].references.combine(paragraph.references)
+                    if self.paragraphs[paragraph_id].reference_hub:
+                        self.paragraphs[paragraph_id].reference_hub = self.paragraphs[paragraph_id].reference_hub.combine(paragraph.reference_hub)
                     # If the paragraph does not have references, set the references to the new references
                     else:
-                        self.paragraphs[paragraph_id].references = paragraph.references
+                        self.paragraphs[paragraph_id].reference_hub = paragraph.reference_hub
                 
                 #raise ValueError(f"Debugging! New Text: {self.paragraphs[paragraph_id].text}")
                 # with open("combined_paragraphs.txt", "a") as file:
@@ -217,12 +244,13 @@ class NodeText(BaseModel):
             else:
                 # If the paragraph already exists at a different index, increment the index and add the paragraph
                 
+                # TODO: REVIEW THIS LOGIC! HOW SHOULD WE HANDLE COPIES?
                 new_id = increment_copy_number(paragraph_id)
                 if paragraph.parent == paragraph_id:
                     paragraph.parent = new_id
                 #print(f"Paragraph already exists at index {previous_index}. Incrementing index and adding new paragraph with id {new_id}.")
                 self.paragraphs[new_id] = paragraph
-                self.length += 1
+                
                 # with open("incremented_paragraphs.txt", "a") as file:
                 #     file.write(f"{new_id}\n")
                 #raise ValueError(f"Debugging! New key (id): {new_id}")
@@ -230,20 +258,30 @@ class NodeText(BaseModel):
         
             return paragraph_id
         
-        self.length += 1
+       
         self.paragraphs[paragraph_id] = paragraph
         return paragraph_id
     
     def to_list_paragraph(self) -> List[Paragraph]:
+        """
+        Return NodeText as a List of Paragraph Pydantic Models
+        """
         sorted_paragraphs = sorted(self.paragraphs.values(), key=lambda p: p.index)
         return sorted_paragraphs
     
     def to_list_text(self) -> List[str]:
+        """
+        Return NodeText as a list of string
+        """
         sorted_paragraphs = sorted(self.paragraphs.values(), key=lambda p: p.index)
         result_text = [paragraph.text for paragraph in sorted_paragraphs]
         return result_text
     
+    # TODO: THIS NEEDS TESTING, NOT SURE IT STILL WORKS WITH UPDATED PARAGRAPH MODEL LOGIC!
     def extrapolate_children_from_parents(self):
+        """
+        Given that each Paragraph knows it's own parent, extrapolate each nested paragraphs children
+        """
         # Initialize a mapping to hold lists of children for each parent ID
         children_map = {}
         for id, paragraph in self.paragraphs.items():
@@ -276,6 +314,9 @@ class NodeText(BaseModel):
         return self
     
     def to_tree(self) -> Dict[str, Any]:
+        """
+        I can't remember what this function does. 
+        """
         
         paragraphs = self.paragraphs
         root_paragraph_id = self.root_paragraph_id
@@ -309,13 +350,19 @@ class NodeText(BaseModel):
     
 # ===== Addendum Models =====
 class AddendumType(BaseModel):
+    """
+    A Pydantic Model which concerns Addendums to sections of legislation. There are 3 possible types of addendums: about history, about the source of legislation, or about the authority of legislation.
+    """
     
     type: str = Field(default="history", description="Type of the addendum. ex: history, source, authority, etc.")
     text: str = Field(..., description="Text content of the addendum.")
     prefix: Optional[str] = Field(default=None, description="Prefix for the addendum.")
-    references: Optional[ReferenceHub] = Field(default=None, description="References associated with the addendum.")
+    reference_hub: Optional[ReferenceHub] = Field(default=None, description="References associated with the addendum.")
      
 class Addendum(BaseModel):
+    """
+    Holds all addendum information for a given section of legislation. ** Note: Could be revisited to alter AddendumType and allow for more flexibility** 
+    """
     source: Optional[AddendumType] = Field(default=None, description="Source addendum.")
     authority: Optional[AddendumType] = Field(default=None, description="Authority addendum.")
     history: Optional[AddendumType] = Field(default=None, description="History addendum.")
@@ -323,7 +370,10 @@ class Addendum(BaseModel):
     metadata: Optional[Dict] = Field(default=None, description="Metadata for the addendum in JSON format.")
 
     
-    def get(self):
+    def get(self) -> str:
+        """
+        Return a string representation of all possible addendums
+        """
         result = []
         if self.source:
             result.append(self.source.text)
@@ -338,50 +388,52 @@ class Addendum(BaseModel):
         return result
     
 class Node(BaseModel):
+    """
+    A Pydantic model represented a single Node of legislation. Two node types: 1. Structure, structures other pieces of legislation, does not contain actual text. 2. Content: contains actual written text of legislation. 
+    """
     # Fields Used For Identification
     id: Union[NodeID, str] = Field(..., description="Primary key of the node.", repr=True)  # Assuming NodeID is a str for simplification
-    citation: Optional[str] = Field(..., description="Citation information for the node.", repr=True)
+    citation: Optional[str] = Field(default=None, description="Citation information for the node.", repr=True)
     link: Optional[HttpUrl] = Field(default=None, description="URL link associated with the node.", repr=True)
 
     # Core Fields
     status: Optional[str] = None
-    node_type: str = Field(..., description="Type of the node.", repr=True)
+    node_type: str = Field(..., description="Type of the node. Must be 'content' or 'structure'", repr=True)
     top_level_title: Optional[str] = None
     level_classifier: str = Field(..., description="Classifier for the node's level.")
     number: Optional[str] = None
     node_name: Optional[str] = None
-    alias: Optional[str] = None
+    
     node_text: Optional[NodeText] = Field(default=None, description="Text content associated with the node.")
-    definitions: Optional[DefinitionHub] = Field(default=None, description="Definitions associated with the node in JSON format.")
+    definition_hub: Optional[DefinitionHub] = Field(default=None, description="Definitions associated with the node in JSON format.")
     core_metadata: Optional[Dict] = Field(default=None, description="Metadata for the node in JSON format.")
     processing: Optional[Dict] = Field(default=None, description="Processing information for the node in JSON format.")
     
     # Addendum Fields
     addendum: Optional[Addendum] = Field(default=None, description="Addendum associated with the node in JSON format.")
-    dates: Optional[Dict] = Field(default=None, description="Important dates associated with the node in JSON format.")
 
     # Additional Fields
     summary: Optional[str] = None
     hyde: Optional[List[str]] = None
-    agency: Optional[str] = None
+    
+    agencies: Optional[List[str]] = Field(default=None, description="A list of government agencies who manage this node.")
 
     # Node/Graph Traversal Fields
     parent: str = Field(default=None, description="Parent node ID.")
     direct_children: Optional[List[str]] = None
-    siblings: Optional[List[str]] = None
     incoming_references: Optional[ReferenceHub] = Field(default=None, description="Incoming references in Dictionary format.")
 
     # Embedding Fields
     text_embedding: Optional[List[float]] = Field(default=None, description="Text embedding vector.")
     summary_embedding: Optional[List[float]] = Field(default=None, description="Summary embedding vector.")
     hyde_embedding: Optional[List[float]] = Field(default=None, description="Hyde embedding vector.")
-    name_embedding: Optional[List[float]] = Field(default=None)
+    name_embedding: Optional[List[float]] = Field(default=None, description="Embedding on the NAME of legislation (possibly including parent names)")
 
     # Metadata Fields
-    date_created: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.utcnow, description="Date the node was created.")
-    date_modified: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.utcnow, description="Date the node was last modified (From Python)")
+    date_created: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, description="Date the node was created.")
+    date_modified: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, description="Date the node was last modified (From Python)")
 
-
+    #TODO: REWORK THIS TO BE BEST PRACTICES FOR NEWER PYDANTIC VERSIONS
     @field_validator('id', mode="before")
     @classmethod
     def validate_nodeID(cls, v: Union[str, NodeID], info: ValidationInfo) -> NodeID:
@@ -391,6 +443,9 @@ class Node(BaseModel):
 
     @property
     def node_id(self):
+        """
+        String accessor alias for node's 'id' field, instead of pydantic NodeID.
+        """
         return self.id.raw_id
 
 
@@ -473,12 +528,14 @@ class APIUsage(BaseModel):
         return self
     
     def insert(self, user: str):
+        from src.utils import utilityFunctions as util
         util.pydantic_insert("api_usage", [self], include=None)
 
 
 
 
 def analyze_partial_link(link: str, user: str) -> Tuple[str, str]:
+    from src.utils import utilityFunctions as util
     #Example link: https://www.ecfr.gov/current/title-24/section-891.105
     #print(f"OG Link: {link}")
     # Split the link into parts
@@ -594,6 +651,7 @@ def fetch_definitions(user: str, node_id: Optional[str] = None, link: Optional[s
     Raises:
     ValueError: If neither node_id nor link is provided.
     """
+    from src.utils import utilityFunctions as util
     
     if node_id is None and link is None:
         raise ValueError("Either node_id or link must be provided to fetch_definitions.")
@@ -682,6 +740,7 @@ def fetch_definitions(user: str, node_id: Optional[str] = None, link: Optional[s
 
 
 def main():
+    from src.utils import utilityFunctions as util
     # test_link = "https://www.ecfr.gov/current/title-40/part-205/subpart-s"
     # analyze_partial_link(test_link, "will2")
     test_id = "us/federal/ecfr/title=7/subtitle=B/chapter=XI/part=1219/subpart=A/subject-group=ECFR70215de6cdda424/section=1219.54"

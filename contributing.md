@@ -43,6 +43,10 @@ Thank you for your interest in contributing to open-source-legislation! We welco
 2. **Set Up Your Development Environment:**
    - Create a virtual environment.
    - Install dependencies from `requirements.txt`.
+   - Set PythonPath: 
+   ```Bash
+   export PYTHONPATH=/Users/s/VSCodeProjects/open-source-legislation:$PYTHONPATH
+   ```
    - Set up the database (refer to the `README.md` for instructions).
 
 3. **Make Your Changes:**

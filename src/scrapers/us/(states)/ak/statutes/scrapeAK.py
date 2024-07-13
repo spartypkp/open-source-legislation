@@ -1,60 +1,57 @@
-import psycopg2
-import os
-import urllib.request
-from bs4 import BeautifulSoup
-import sys
 
-import utils.utilityFunctions as util
+import os
+from bs4 import BeautifulSoup
+
+
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import re
+
 import time
-import json
 from bs4.element import Tag
-import asyncio
-
-
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node
 
 
 
-from utils.pydanticModels import NodeID, Node
-from utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node
-
-import json
-
-# Replacle with the state/country code
 COUNTRY = "us"
+# State code for states, 'federal' otherwise
 JURISDICTION = "ak"
+# 'statutes' is current default
 CORPUS = "statutes"
 # No need to change this
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 
 
-
-TABLE_NAME = "ak_node"
+# The base URL of the corpus's official .gov website
 BASE_URL = "https://www.akleg.gov"
+# The URL of the Table of Contents
 TOC_URL = "https://www.akleg.gov/basis/statutes.asp"
+# Start scraping at a specific top_level_title
 SKIP_TITLE = 0 # 0/47 titles
-DRIVER = None
 RESERVED_KEYWORDS = ["Repealed"]
+
+# === Jurisdiction Specific Global Variables ===
+# Selenium Driver
+DRIVER = None
+
 
 
 def main():
-    insert_jurisdiction_and_corpus_node()
-    scrape_all_titles()
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(country_code=COUNTRY, jurisdiction_code=JURISDICTION, corpus_code=CORPUS)
+    scrape_all_titles(corpus_node)
 
-def scrape_all_titles():
+def scrape_all_titles(corpus_node: Node):
     global DRIVER
     DRIVER = webdriver.Chrome()
     DRIVER.get(TOC_URL)
     DRIVER.implicitly_wait(.25)
 
-    og_parent = "ak/statutes/"
+    
     
     toc_nav_container = DRIVER.find_element(By.ID, "TOC_A")
     toc_nav_container.click()
@@ -74,17 +71,27 @@ def scrape_all_titles():
         # I want to convert top level title to a string with leading zeros ex: 1 -> 01, 21 -> 21
         
         
-        node_citation = top_level_title.zfill(2)
-        node_link = TOC_URL + "#" + node_citation
+        citation = top_level_title.zfill(2)
+        link = TOC_URL + "#" + citation
         node_type = "structure"
-        node_level_classifier = "TITLE"
-        title_node_id = f"{og_parent}{node_level_classifier}={top_level_title}/"
+        level_classifier = "title"
+        title_node_id = f"{corpus_node.node_id}/{level_classifier}={top_level_title}"
         
 
         ### Get title information, Add title node
-        title_node_data = (title_node_id, top_level_title, node_type, node_level_classifier, None, None, "AS " + node_citation, node_link, None, title_name, None, None, None, None, None, og_parent, None, None, None, None, None)
-        print(title_node_id)
-        inserted_node = insert_node(node=title_node_data, table_name=TABLE_NAME, ignore_duplicate=True)
+        title_node = Node(
+            id=title_node_id,
+            top_level_title=top_level_title,
+            number=top_level_title,
+            node_type=node_type,
+            node_name=title_name,
+            level_classifier=level_classifier,
+            citation="AS " + citation,
+            link=link,
+            parent=corpus_node.node_id
+        )
+        print(f"Inserting: {title_node_id}")
+        inserted_node = insert_node(node=title_node, table_name=TABLE_NAME, ignore_duplicate=True)
 
         # Find the parent element of the title container, using By.XPATh
         title_container.click()
@@ -92,19 +99,17 @@ def scrape_all_titles():
         time.sleep(0.5)
         
 
-        scrape_all_chapters(top_level_title, title_node_id, node_citation)
+        scrape_all_chapters(top_level_title, title_node)
         title_return = DRIVER.find_element(By.ID, "titleLink")
         title_return.click()
         time.sleep(0.5)
 
-def scrape_all_chapters(top_level_title, node_parent, parent_citation):
+def scrape_all_chapters(top_level_title: str, node_parent: Node):
     global DRIVER
     
     chapters_container = DRIVER.find_element(By.ID, "ChapterToc")
     
     _all_chapters = len(chapters_container.find_elements(By.TAG_NAME, "a"))
-
-    
 
     for i in range(0, _all_chapters):
         #print(i)
@@ -124,38 +129,54 @@ def scrape_all_chapters(top_level_title, node_parent, parent_citation):
             chapter_number = chapter_number[:-1]
         
         node_type = "structure"
-        node_level_classifier = "CHAPTER"
+        level_classifier = "chapter"
         
-        node_citation =  parent_citation + "." + chapter_number
+        citation =  node_parent.citation + "." + chapter_number
         chapter_number = str(int(chapter_number))
-        node_link = TOC_URL + "#" + node_citation
-        
+        link = TOC_URL + "#" + citation
+
+        status=None
         for word in RESERVED_KEYWORDS:
             if word in chapter_name:
-                node_type = "reserved"
+                
+                status = "reserved"
                 break
-        node_id = f"{node_parent}{node_level_classifier}={chapter_number}/"
-        node_data =  (node_id, top_level_title, node_type, node_level_classifier, None, None, "AS " + node_citation, node_link, None, chapter_name, None, None, None, None, None, node_parent, None, None, None, None, None)
+
+        node_id = f"{node_parent.node_id}/{level_classifier}={chapter_number}"
+        chapter_node = Node(
+            id=node_id,
+            top_level_title=top_level_title,
+            node_type=node_type,
+            number=chapter_number,
+            node_name=chapter_name,
+            level_classifier=level_classifier,
+            citation=citation,
+            link=link,
+            parent=node_parent.parent,
+            status=status
+        )
+        
 
          ## INSERT STRUCTURE NODE, if it's already there, skip it
         try:
-            insert_node(node=node_data, table_name=TABLE_NAME)
-            print(node_id)
+            insert_node(node=chapter_node, table_name=TABLE_NAME)
+            print(f"Inserting: {node_id}")
         except:
             print("** Skipping:",node_id)
             continue
-
-        if node_type!="reserved":
+        
+        # If chapter is not reserved
+        if not status:
             chapter_container.click()
             chapter_a_tag.click()
             time.sleep(1)
-            scrape_all_sections(top_level_title, node_id)
+            scrape_all_sections(top_level_title, chapter_node)
             chapter_return = DRIVER.find_element(By.ID, "partHead").find_element(By.TAG_NAME, "a")
             chapter_return.click()
 
         time.sleep(1)
         
-def scrape_all_sections(top_level_title, node_parent):
+def scrape_all_sections(top_level_title: str, node_parent: Node):
     
     sections_container = DRIVER.find_element(By.ID, "ChapterToc")
     
@@ -165,234 +186,223 @@ def scrape_all_sections(top_level_title, node_parent):
     for i in range(0, len(_all_sections)):
 
         sections_container = DRIVER.find_element(By.ID, "ChapterToc")
-        try:
+        
+       
 
-            all_sections = sections_container.find_elements(By.TAG_NAME, "a")
-            section_container_raw = all_sections[i]
-            section_container = BeautifulSoup(section_container_raw.get_attribute("outerHTML"), features="html.parser")
+        all_sections = sections_container.find_elements(By.TAG_NAME, "a")
+        section_container_raw = all_sections[i]
+        section_container = BeautifulSoup(section_container_raw.get_attribute("outerHTML"), features="html.parser")
+
+    
+        
+        node_name = section_container.get_text().strip()
+        
+        if "No Sections" in node_name:
+            return
+        
+        number = node_name.split(" ")[1]
+        found_article = False
+        
+        if number[-1] == ".":
+            number = number[:-1]
+        
+        citation = number
+
+        number = number.split(".")[-1]
+        # Remove any leading zeros ex: 005 -> 5
+        number = str(int(number))
+        
 
         
+        node_type = "content"
+        level_classifier = "section"
+        link = TOC_URL + "#" + citation
+
+        status=None
+        for word in RESERVED_KEYWORDS:
+            if word in node_name:
+                status = "reserved"
+                break
+        
+
+        # TODO: Needs refactoring to work with Pydantic Models
+        if status != "reserved":
             
-            node_name = section_container.get_text().strip()
+            #Example section link:  https://www.akleg.gov/basis/statutes.asp#02.15.010
             
-            if "No Sections" in node_name:
-                return
-            
-            node_number = node_name.split(" ")[1]
-            found_article = False
-            
-            if node_number[-1] == ".":
-                node_number = node_number[:-1]
-            
-            node_citation = node_number
-
-            node_number = node_number.split(".")[-1]
-            # Remove any leading zeros ex: 005 -> 5
-            node_number = str(int(node_number))
-            
-
-            
-            node_type = "content"
-            node_level_classifier = "SECTION"
-            node_link = TOC_URL + "#" + node_citation
-
-            for word in RESERVED_KEYWORDS:
-                if word in node_name:
-                    node_type = "reserved"
-                    break
-
-            node_text = None
-            node_addendum = None
-            node_tags = None
-            node_references = None
-            #node_tags = None
-            #print(node_type)
-            if node_type != "reserved":
-                node_text = []
-                node_addendum = None
-                node_references = {}
-                node_tags = {}
-
-                # https://www.akleg.gov/basis/statutes.asp#02.15.010
-                
-
-                section_driver = webdriver.Chrome()
-                section_driver.get(node_link)
-                section_driver.implicitly_wait(1)
-                time.sleep(1)
-                section_driver.find_element(By.ID, "content")
-
-                
-                
-                for i in range(0, 100):
-                    time.sleep(.25)
-                    try:
-                        addendum_container_raw = section_driver.find_element(By.ID, "sideSection")
-                        addendum_container = addendum_container_raw.find_element(By.TAG_NAME, "div")
-                        # print(addendum_container.get_attribute("outerHTML"))
-                        break
-                    except:
-                        print(i*.25)
-                        addendum_container = None
-                
-
-                
-                
-                section_soup = BeautifulSoup(section_driver.page_source, features="html.parser").body
-                
-                
-                all_text_container = section_soup.find(id="content")
-                
-                text_container = all_text_container.find("a", attrs={"name": node_citation})
-                iterator = text_container.parent
-
-                # Find parent article
-                for tag in iterator.previous_elements:
-                    if not isinstance(tag, Tag):
-                        continue
-                    
-                    if tag.find("h7") is not None:
-                        article_container = tag.find("h7")
-                        article_name = article_container.get_text().strip()
-                        article_number = article_name.split(" ")[1]
-                        if article_number[-1] == ".":
-                            article_number = article_number[:-1]
-                        article_node_type = "structure"
-                        article_node_level_classifier = "ARTICLE"
-                        
-
-                        article_node_id = f"{node_parent}{article_node_level_classifier}={article_number}/"
-                        article_node_data =  (article_node_id, top_level_title, article_node_type, article_node_level_classifier, None, None, None, node_link, None, article_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-
-                        ## INSERT STRUCTURE NODE, if it's already there, skip it
-                        insert_node(article_node_data, table_name=TABLE_NAME, ignore_duplicate=True)
-                        
-                        found_article = True
-                        break
-
-                internal = []
-                external = []
-                
-                while True:
-                    iterator = iterator.next_sibling
-                    if iterator is None:
-                        break
-                    if isinstance(tag, Tag):
-                    
-                        if iterator.name == "b":
-                            break
-                        txt = iterator.get_text().strip()
-                        if iterator.name == "a":
-                            href = iterator["href"]
-                            
-                            if "#" in href:
-                                ref_link = "https://www.akleg.gov/basis/" + href
-                                internal.append({"citation": txt, "link": ref_link})
-                            else:
-                                external.append({"text": txt, "link": href})
-                        if txt == "":
-                            continue
-                        node_text.append(txt)
-                    else:
-
-                        txt = iterator
-                        print(txt)
-                        if txt == "":
-                            continue
+            section_driver = webdriver.Chrome()
+            section_driver.get(link)
+            section_driver.implicitly_wait(1)
+            time.sleep(1)
+            section_driver.find_element(By.ID, "content")
 
             
-                
-                
-                addendum_container = BeautifulSoup(addendum_container.get_attribute("outerHTML"), features="html.parser").find("div")
-                
-                if addendum_container is not None:
-                    
-                    category = None
-                    for i, element in enumerate(addendum_container.contents):
-                        
-                        if isinstance(element, Tag):
-                            if element.name == "br":
-                                continue
-                            txt = element.get_text().strip()
-                            print(txt)
-                            if element.name == "h5":
-                                category = element.get_text().strip()
-                                continue
-                            
-                            if element.name == "a":
-                                href = element["href"]
-                                tag_link = "https://www.akleg.gov/basis/" + href
-                                
-                                if "REFERENCES" in category:
-                                    if "#" in href:
-                                        
-                                        internal.append({"citation": txt, "link": tag_link})
-                                    else:
-                                        external.append({"text": txt, "link": href})
-
-                                if category not in node_tags:
-                                    node_tags[category] = []
-                                
-
-                                node_tags[category].append({"citation": txt, "link": tag_link})
-                                print("ADDING TO NODE_TAGS")
-                        else:
-                            txt = element
-                            print(txt)
-                            if txt == "":
-                                continue
-                            if "History." in txt:
-                                node_addendum = txt
-                                break
-                            if "REFERENCES" in category:
-                                continue
-
-                            node_tags[category][-1]['text'] = txt   
-
-                
-                print("NODE TAGS", node_tags) 
-                if node_tags == {}:
-                    node_tags = None
-                else:
-                    node_tags = json.dumps(node_tags)
-
-                if len(internal) > 0:
-                    node_references["internal"] = internal
-                if len(external) > 0:
-                    node_references["external"] = external
-                if node_references == {}:
-                    node_references = None
-                else:
-                    node_references = json.dumps(node_references)
-
-            if found_article:
-                node_id = f"{article_node_id}{node_level_classifier}={node_number}"
-                node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, "AS " + node_citation, node_link, node_addendum, node_name, None, None, None, None, None, article_node_id, None, None, node_references, None, node_tags)
-
-            else:
-                node_id = f"{node_parent}{node_level_classifier}={node_number}"
-                node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, "AS " +node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, node_references, None, node_tags)
-
-
-
-
-            
-            ### FOR ADDING A CONTENT NODE, allowing duplicates
-            base_node_id = node_id
-            
-            for i in range(2, 10):
+            # I'm not sure why I made this arbitrarirly 100 long.
+            for i in range(0, 100):
+                time.sleep(.25)
                 try:
-                    insert_node(node_data, )
-                    print(node_id)
+                    addendum_container_raw = section_driver.find_element(By.ID, "sideSection")
+                    addendum_container = addendum_container_raw.find_element(By.TAG_NAME, "div")
+                    
                     break
-                except Exception as e:   
-                    print(e)
-                    node_id = base_node_id + f"-v{i}/"
-                    node_type = "content_duplicate"
-                    node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, node_references, None, node_tags)
-                continue
-        except:
-            continue
+                except:
+                    print(i*.25)
+                    addendum_container = None
+            
+
+            
+            
+            section_soup = BeautifulSoup(section_driver.page_source, features="html.parser").body
+            
+            
+            all_text_container = section_soup.find(id="content")
+            
+            text_container = all_text_container.find("a", attrs={"name": citation})
+            iterator = text_container.parent
+
+            # Find parent article
+            for tag in iterator.previous_elements:
+                if not isinstance(tag, Tag):
+                    continue
+                
+                if tag.find("h7") is not None:
+                    article_container = tag.find("h7")
+                    article_name = article_container.get_text().strip()
+                    article_number = article_name.split(" ")[1]
+                    if article_number[-1] == ".":
+                        article_number = article_number[:-1]
+                    article_node_type = "structure"
+                    article_node_level_classifier = "article"
+                    
+
+                    article_node_id = f"{node_parent.node_id}/{article_node_level_classifier}={article_number}"
+                    article_node = Node(
+                        id=article_node_id,
+                        top_level_title=top_level_title,
+                        number=article_number,
+                        node_type=article_node_type,
+                        node_name=article_name,
+                        level_classifier="article",
+                        citation=f"{node_parent.citation} Article {article_number}",
+                        link=link,
+                        parent=node_parent.parent,
+                        status=status
+                    )
+
+                    ## INSERT STRUCTURE NODE, if it's already there, skip it
+                    insert_node(article_node, table_name=TABLE_NAME, ignore_duplicate=True)
+                    
+                    found_article = True
+                    break
+
+            
+            node_text = NodeText()
+            
+            # This is so dirty, and I apologize for this shit
+            while True:
+                reference_hub = None
+                iterator = iterator.next_sibling
+                if iterator is None:
+                    break
+                # If the element is a BS4 Tag
+                if isinstance(tag, Tag):
+                    # Skip bold
+                    if iterator.name == "b":
+                        break
+                    reference_hub = ReferenceHub()
+                    # Get the text, remove whitespace, check if tag is anchor tag
+                    txt = iterator.get_text().strip()
+                    if iterator.name == "a":
+                        href = iterator["href"]
+                        # Indicates a same-site (same corpus) reference, corpus is None
+                        if "#" in href:
+                            ref_link = "https://www.akleg.gov/basis/" + href
+                            reference = Reference(text=txt, placeholder=None)
+                            reference_hub.references[ref_link] = reference
+                        # Indicates an external site (different corpus) reference, set corpus to other
+                        # TODO: Experiment for common outgoing corpus tags and incorporate logic here
+                        else:
+                            reference = Reference(text=txt, placeholder=None, corpus="other")
+                            reference_hub.references[href] = reference
+                            
+                    if txt == "":
+                        continue
+                    node_text.add_paragraph(text=txt, reference_hub=reference_hub)
+                else:
+                    txt = iterator
+                    print(txt)
+                    if txt == "":
+                        continue
+            # Process the addendum container
+            addendum_container = BeautifulSoup(addendum_container.get_attribute("outerHTML"), features="html.parser").find("div")
+            addendum = Addendum()
+            core_metadata = {}
+            if addendum_container is not None:
+                
+                category = None
+                for i, element in enumerate(addendum_container.contents):
+                    
+                    if isinstance(element, Tag):
+                        if element.name == "br":
+                            continue
+                        txt = element.get_text().strip()
+                        print(txt)
+                        if element.name == "h5":
+                            category = element.get_text().strip()
+                            continue
+                        
+                        if element.name == "a":
+                            href = element["href"]
+                            tag_link = "https://www.akleg.gov/basis/" + href
+                            
+                            
+
+                            if category not in core_metadata:
+                                core_metadata[category] = []
+                            
+
+                            core_metadata[category].append({"citation": txt, "link": tag_link})
+                            
+                    else:
+                        txt = element
+                        
+                        if txt == "":
+                            continue
+                        if "History." in txt:
+                            addendum.history = AddendumType(text=txt)
+                            break
+                        if "REFERENCES" in category:
+                            continue
+
+                        core_metadata[category][-1]['text'] = txt   
+
+            
+        if found_article:
+            section_node_id = f"{article_node_id}/{level_classifier}={number}"
+            parent=article_node_id
+
+        else:
+            section_node_id = f"{node_parent.node_id}/{level_classifier}={number}"
+            parent=node_parent.node_id
+
+            
+        section_node = Node(
+            id=section_node_id, 
+            top_level_title=top_level_title, 
+            node_type=node_type, 
+            number=number, 
+            node_name=node_name, 
+            level_classifier=level_classifier, 
+            node_text=node_text, 
+            citation="AS " + citation, 
+            link=link, 
+            addendum=addendum, 
+            parent=parent, 
+            core_metadata=core_metadata
+        )
+        print(f"-Inserting: {section_node_id}")
+        insert_node(section_node, TABLE_NAME)
+        
 
 if __name__ == "__main__":
     main()
