@@ -5,23 +5,6 @@ Thank you for your interest in contributing to open-source-legislation! We welco
 ## Table of Contents
 
 1. [How to Contribute](#how-to-contribute)
-2. [Creating a New Scraper](#creating-a-new-scraper)
-    - [Phase 0: Initial Research](#phase-0-initial-research)
-    - [Phase 1: Prepare Coding Environment](#phase-1-prepare-coding-environment)
-    - [Phase 2: Read Top-level Titles](#phase-2-read-top-level-titles)
-    - [Phase 3: Code Scraper](#phase-3-code-scraper)
-    - [Phase 4: Debug Scraper](#phase-4-debug-scraper)
-    - [Phase 5: Process Database](#phase-5-process-database)
-3. [Coding Standards](#coding-standards)
-4. [Issue Reporting](#issue-reporting)
-
-# Contributing to open-source-legislation
-
-Thank you for your interest in contributing to open-source-legislation! We welcome contributions of all kinds, including new features, bug fixes, documentation improvements, and especially new jurisdiction scrapers. This document will guide you through the process of contributing to the project.
-
-## Table of Contents
-
-1. [How to Contribute](#how-to-contribute)
 2. [Creating a New Scraper](##creating-a-new-scraper)
     - [Phase 0: Initial Research](###phase-0-initial-research)
     - [Phase 1: Prepare Coding Environment](###phase-1-prepare-coding-environment)
