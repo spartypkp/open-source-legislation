@@ -1,14 +1,11 @@
 from bs4 import BeautifulSoup
-import urllib.request
+
 from urllib.request import Request, urlopen
-import requests
-import json
 import os
 import sys
+import json
 DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
+
 
 BASE_URL = "https://www.azleg.gov"
 TOC_URL = "https://www.azleg.gov/arstitle/"
@@ -17,6 +14,9 @@ def main():
     read_all_top_level_titles()
 
 def read_all_top_level_titles():
+    """
+    Go to the TOC URL and get the individual page links for each top level title.
+    """
     
     req = Request(
         url=TOC_URL, 
@@ -28,11 +28,15 @@ def read_all_top_level_titles():
 
     soup = soup.find(id="arsTable")
     all_links = soup.find_all("a")
+
+    top_level_title_links = []
+    for link in all_links:
+        top_level_title_links.append(link['href'])
     
-    with open(f"{DIR}/data/top_level_titles.txt","w") as write_file:
-        for link in all_links:
-            output_link = link['href'] + "\n"
-            write_file.write(output_link)
+    output_json = json.dumps({"top_level_titles": top_level_title_links})
+
+    with open(f"{DIR}/top_level_title_links.json","w") as write_file:
+        write_file.write(output_json)
     write_file.close()
 
 

@@ -31,7 +31,7 @@ This document provides an overview of the refactoring progress for the open-sour
 
 ### Alaska Statutes
 
-- **Status:** Major Refactoring Required
+- **Status:** Done
 - [Detailed Refactoring Notes](../src/scrapers/us/(states)/ak/statutes/refactoring.md)
 
 ## United States - Alabama (`us/(states)/al`)
