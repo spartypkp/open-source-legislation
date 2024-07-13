@@ -1,43 +1,60 @@
-from bs4 import BeautifulSoup, NavigableString
-import urllib.parse 
-from urllib.parse import unquote, quote
-import urllib.request
-import requests
-import json
-import re
-import urllib.request
-from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
-from urllib.error import URLError
-from typing import List, Dict, Any
+
+
+
 import os
 import sys
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
+from typing import List, Tuple
+import time
+import json
+
 DIR = os.path.dirname(os.path.realpath(__file__))
-from utils.pydanticModels import Node, NodeID
-import utils.utilityFunctions as util
-from utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node_ignore_duplicate, insert_node
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 
 
-BASE_URL = 'https://leginfo.legislature.ca.gov/'
-ROOT_URL = "https://leginfo.legislature.ca.gov/faces/codes.xhtml"
+
 COUNTRY = "us"
-JURISDICTION="ca"
-CORPUS="statutes"
-TABLE_NAME=f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
+# State code for states, 'federal' otherwise
+JURISDICTION = "ca"
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
+BASE_URL = 'https://leginfo.legislature.ca.gov/'
+TOC_URL = "https://leginfo.legislature.ca.gov/faces/codes.xhtml"
+SKIP_TITLE = 0 
+
+all_codes: List[Tuple[str, str]] = [("BPC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=BPC" ),("CIV","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CIV" ),("CCP","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CCP" ),("COM","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=COM" ),("CORP","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CORP" ),("EDC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=EDC" ),("ELEC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=ELEC" ),("EVID","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=EVID" ),("FAM","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FAM" ),("FIN","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FIN" ),("FGC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FGC" ),("FAC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FAC" ),("GOV","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=GOV" ),("HNC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=HNC" ),("HSC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=HSC" ),("INS","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=INS" ),("LAB","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=LAB" ),("MVC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=MVC" ),("PEN","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PEN" ),("PROB","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PROB" ),("PCC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PCC" ),("PRC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PRC" ),("PUC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PUC" ),("RTC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=RTC" ),("SHC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=SHC" ),("UIC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=UIC" ),("VEH","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=VEH" ),("WAT","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=WAT" ),("WIC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=WIC" )]
+
 
 def main():
     corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
     scrape(corpus_node)
 
-all_codes = [("BPC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=BPC" ),("CIV","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CIV" ),("CCP","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CCP" ),("COM","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=COM" ),("CORP","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=CORP" ),("EDC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=EDC" ),("ELEC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=ELEC" ),("EVID","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=EVID" ),("FAM","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FAM" ),("FIN","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FIN" ),("FGC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FGC" ),("FAC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=FAC" ),("GOV","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=GOV" ),("HNC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=HNC" ),("HSC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=HSC" ),("INS","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=INS" ),("LAB","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=LAB" ),("MVC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=MVC" ),("PEN","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PEN" ),("PROB","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PROB" ),("PCC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PCC" ),("PRC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PRC" ),("PUC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=PUC" ),("RTC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=RTC" ),("SHC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=SHC" ),("UIC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=UIC" ),("VEH","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=VEH" ),("WAT","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=WAT" ),("WIC","https://leginfo.legislature.ca.gov/faces/codedisplayexpand.xhtml?tocCode=WIC" )]
 
 # Current 
 # class=treecodetitle
-def scrape(corpus: Node):
-    DIVISION = ["DIVISION", "PART", "TITLE", "CHAPTER", "ARTICLE"]
-    PART = ["PART", "TITLE", "DIVISION", "CHAPTER", "ARTICLE"]
-    TITLE = ["TITLE", "DIVISION", "PART", "CHAPTER", "ARTICLE"]
-    SHORT = ["DIVISION", "CHAPTER", "ARTICLE"]
-    REGULAR = ["DIVISION", "PART", "CHAPTER", "ARTICLE"]
+def scrape(corpus_node: Node):
+
+    # This is beyond messy. California likes to move the ordering of their levels around based on the different code. This is a way to track those. This took 30+ hours of research. And it's messy, I'm sorry.
+
+    DIVISION_CASE = ["DIVISION", "PART", "TITLE", "CHAPTER", "ARTICLE"]
+    PART_CASE = ["PART", "TITLE", "DIVISION", "CHAPTER", "ARTICLE"]
+    TITLE_CASE = ["TITLE", "DIVISION", "PART", "CHAPTER", "ARTICLE"]
+    SHORT_CASE = ["DIVISION", "CHAPTER", "ARTICLE"]
+    REGULAR_CASE = ["DIVISION", "PART", "CHAPTER", "ARTICLE"]
     BASE = ["ca", "statutes", "code"]
 
     DIVISION_CODE = ["WAT", "CIV"]
@@ -62,35 +79,32 @@ def scrape(corpus: Node):
         title_schema = []
 
         if (code in DIVISION_CODE):
-            title_schema = DIVISION
+            title_schema = DIVISION_CASE
         elif (code in PART_CODE):
-            title_schema = PART
+            title_schema = PART_CASE
         elif (code in TITLE_CODE):
-            title_schema = TITLE
+            title_schema = TITLE_CASE
         elif (code in SHORT_CODE):
-            title_schema = SHORT
+            title_schema = SHORT_CASE
         else:
-            title_schema = REGULAR
+            title_schema = REGULAR_CASE
         title_schema = BASE + title_schema
 
-        code_model = Node(f"{COUNTRY}/{JURISDICTION}/{CORPUS}/code={code.lower()}", parent=corpus.node_id, top_level_title=code.lower(), node_type="structure", level_classifier="code", node_link=url )
-        util.pydantic_insert(TABLE_NAME, [code_model])
-
-        scrape_structure_nodes(url, title_schema, code_model, code)
+        code_node = Node(
+            id=f"{corpus_node.node_id}/code={code.lower()}", 
+            link=url, 
+            parent=corpus_node.node_id, 
+            number=code.lower(),
+            top_level_title=code.lower(), 
+            node_type="structure", 
+            level_classifier="code"
+        )
+        insert_node(code_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
+        scrape_structure_nodes(url, title_schema, code_node, code)
         
 # For every root node, scrape all structure nodes, getting a list of all valid HTML div elements which have content node children
 def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node, top_level_title: str):
-    try:
-        response = make_request(url)
-        data = response.read()      # a `bytes` object
-        text = data.decode('utf-8') # a `str`; 
-        soup = BeautifulSoup(text, 'html.parser')
-    # Process the response here
-    except URLError as e:
-        # Handle the error after the final retry attempt has failed
-        print(f"Failed to retrieve the URL: {e}")
-        exit(1)
-    # Find the name of the code we're scraping
+    soup = get_url_as_soup(url=url)
     
     # Find the HTML container for actual content
     codesbrchfrm = soup.find(id="codesbrchfrm")
@@ -117,171 +131,108 @@ def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node,
         div_elements.append(current_element)
         
     
-    scrape_per_title(div_elements, title_schema, node_parent, top_level_title)
+    scrape_per_title(div_elements, title_schema, node_parent)
     return node_parent
 
 
-def scrape_per_title(structure_divs, title_schema: List[str], node_parent: Node, top_level_title: str):
+def scrape_per_title(structure_divs, title_schema: List[str], node_parent: Node):
     current_node = node_parent
     # Find the container
     
-
     for i, div in enumerate(structure_divs):
         # Skip useless style divs
-        new_node = get_structure_node_attributes(div, top_level_title, current_node, title_schema)
+        new_partial_node: Node = get_structure_node_attributes(div, current_node)
         
         
         # Check if node level classifier is in title schema
-        
-        
-        
-        
-        if ("reserved" in new_node.node_name):
-            continue
-
-        if(new_node.node_type == "description" or new_node.node_type == "reference"):
-            new_name = new_node.node_name.replace(" ","_")
-            new_node.node_id = current_node.node_id + new_node.node_level_classifier + "=" + new_name + "/"
-            new_node.node_parent = node_parent
-            print(new_node)
-            new_node.insert(TABLE_NAME)
+        if (new_partial_node.level_classifier not in title_schema):
             
-            scrape_content_node(new_node, top_level_title)
-            continue
-        
-        elif (new_node.node_level_classifier not in title_schema):
-            index = title_schema.index(new_node.node_parent.node_level_classifier) + 1
+            index = title_schema.index(current_node.id.current_level[0]) + 1
+            # Couldn't find the new level_classifier in the title_schema
             if(index == len(title_schema)):
-                if ("codes_displayText" in new_node.node_link):
-                    new_node.node_level_classifier = "SECTION"
+                # Indicates a section by the link attribute _displayText
+                if ("codes_displayText" in new_partial_node.node_link):
+                    new_partial_node.level_classifier = "section"
                 else:
-                    new_node.node_level_classifier = "SUB" + new_node.node_parent.node_level_classifier
+                    # Allow for 'subtitle', 'subchapter', 'subpart' etc...
+                    new_partial_node.level_classifier = "sub" + current_node.level_classifier
             else:
-                new_node.node_level_classifier = title_schema[index]
+                new_partial_node.level_classifier = title_schema[index]
             
            
         
-        if (new_node.node_level_classifier in title_schema):
+        if (new_partial_node.level_classifier in title_schema):
             # Actually build node
             # POSSIBLY ADD
 
-            currentRank = title_schema.index(current_node.node_level_classifier)
-            newRank = title_schema.index(new_node.node_level_classifier)
+            currentRank = title_schema.index(current_node.level_classifier)
+            newRank = title_schema.index(new_partial_node.level_classifier)
 
             # Determine the position of the newNode in the hierarchy
             if (newRank <= currentRank):
-                temp_node = current_node
+                temp_node_id = current_node.id
 
-                while (title_schema.index(temp_node.node_level_classifier) > newRank):
-                    temp_node = temp_node.node_parent
-                    if (temp_node.node_level_classifier == 'code'):
+                while (title_schema.index(temp_node_id.current_level[0]) > newRank):
+                    temp_node_id = temp_node_id.pop_level()
+                    if (temp_node_id.current_level[0] == 'code'):
                         break
                     
                 
-                current_node = temp_node
-                currentRank = title_schema.index(current_node.node_level_classifier)
+                current_node = temp_node_id
+                currentRank = title_schema.index(current_node.current_level[0])
                 # Set the ID of the newNode and add it to the current_node's children or siblings
                 if (newRank == currentRank):
-                    if (not current_node.node_parent):
-                        print("current_node.parent undefined!")
-                        exit(1)
+                
 
-                    new_node.node_id = current_node.node_parent.node_id + new_node.node_level_classifier + "=" + new_node.node_name.split(" ")[1] + "/"
-                    if(new_node.node_type == "reference"):
-                        new_node.node_name = new_node.node_name.split(" ")[1]
-                        new_node.node_name = new_node.node_name.replace("_","")
+                    new_partial_node.id = f"{current_node.pop_level().raw_id}/{new_partial_node.level_classifier}={new_partial_node.node_name.split(" ")[1]}"
                     
-                    new_node.node_parent = current_node.node_parent
                     
-                    current_node = new_node
+                    new_partial_node.parent = current_node.pop_level().raw_id
+                    
+                    current_node = new_partial_node
                 else:
-                    new_node.node_id = temp_node.node_id + new_node.node_level_classifier + "=" + new_node.node_name.split(" ")[1]+ "/"
-                    if(new_node.node_type == "reference"):
-                        new_node.node_name = new_node.node_name.split(" ")[1]
-                        new_node.node_name = new_node.node_name.replace("_","")
+                    new_partial_node.id = f"{temp_node_id}/{new_partial_node.level_classifier}={new_partial_node.node_name.split(" ")[1]}"
                     
-                    new_node.parent = current_node
-                    current_node = new_node
+                    
+                    new_partial_node.parent = current_node.raw_id
+                    current_node = new_partial_node
                 
             else:
                 # Set the ID of the newNode and add it to the current_node's children
-                new_node.node_id += new_node.node_level_classifier + "=" + new_node.node_name.split(" ")[1] + "/"
-                if(new_node.node_type == "reference"):
-                        new_node.node_name = new_node.node_name.split(" ")[1]
-                        new_node.node_name = new_node.node_name.replace("_"," ")
-                #new_node.node_id = new_node.node_id.replace("./", "/")
-                
-                new_node.parent = current_node
-                current_node = new_node
+                new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.node_name.split(" ")[1])
+               
+                new_partial_node.parent = current_node.node_id
+                current_node = new_partial_node
             
 
             # Print the current_node and scrape content if necessary
             current_node.node_id = current_node.node_id.replace("./", "/")
             print(current_node)
-            for i in range(2, 10):
-                try:
-                    current_node.insert(TABLE_NAME)
-                    break
-                except:
-                    # Remove all characters from row_data.node_id after "-version"
-                    temp = current_node.node_id
-                    if("-version" in current_node.node_id):
-                        temp = current_node.node_id.split("-version")[0]
-
-                    current_node.node_id = temp + f"-version_{i}"
+            insert_node(current_node, TABLE_NAME, debug_mode=True)
             
             #print(current_node)
-            if ("codes_displayText" in  new_node.node_link and new_node.node_type != "reserved"):
-                #print(f"Scraping all content for {new_node.node_id}")
-                scrape_content_node(new_node, top_level_title)
-        elif ("codes_displayText" in  new_node.node_link  and new_node.node_type != "reserved" and new_node.node_type != "description"):
+            if ("codes_displayText" in  new_partial_node.link):
+                scrape_content_node(new_partial_node)
+        elif ("codes_displayText" in  new_partial_node.link):
                 
-                #print(f"Scraping all content for {new_node.node_id}")
-                new_node.node_id += new_node.node_level_classifier + "=" + new_node.node_name.split(" ")[1] + "/"
-                new_node.node_parent = current_node
-                print(new_node)
-                for i in range(2, 10):
-                    try:
-                        new_node.insert(TABLE_NAME)
-                        break
-                    except:
-                        # Remove all characters from row_data.node_id after "-version"
-                        temp = new_node.node_id
-                        if("-version" in new_node.node_id):
-                            temp = new_node.node_id.split("-version")[0]
-
-                        new_node.node_id = temp + f"-version_{i}"
-                scrape_content_node(new_node, top_level_title)
-        else:
-            print("WEIRD CASE!")
-            new_name = new_node.node_name.replace(" ","_")
-            new_node.node_id = current_node.node_id + new_node.node_level_classifier + "=" + new_name + "/"
-            new_node.node_parent = node_parent
-            new_node.node_id = new_node.node_id.replace("./", "/")
-            print(new_node)
-            for i in range(2, 10):
-                try:
-                    new_node.insert(TABLE_NAME)
-                    break
-                except:
-                    # Remove all characters from row_data.node_id after "-version"
-                    temp = new_node.node_id
-                    if("-version" in new_node.node_id):
-                        temp = new_node.node_id.split("-version")[0]
-
-                    new_node.node_id = temp + f"-version_{i}"
-            
-            #print(current_node)
-            if ("codes_displayText" in  new_node.node_link and new_node.node_type != "reserved"):
-                #print(f"Scraping all content for {new_node.node_id}")
-                scrape_content_node(new_node, top_level_title)
+                #print(f"Scraping all content for {new_partial_node.node_id}")
+                new_partial_node.node_id += new_partial_node.level_classifier + "=" + new_partial_node.node_name.split(" ")[1] + "/"
+                new_partial_node.parent = current_node.node_id
+    
+                insert_node(new_partial_node, TABLE_NAME, debug_mode=True)
+                scrape_content_node(new_partial_node)
+        
             
     
 
 
     
 
-def get_structure_node_attributes(current_element, top_level_title: str, node_parent: Node, title_schema: List[str]):
+def get_structure_node_attributes(current_element, node_parent: Node) -> Node:
+    """
+    For a structure node, initially populate the attributes into a Pydantic model. The true correct node_id and parent are uncertain, as the correct hierarchy has to be determined later.
+
+    """
     # Find the "a" tag inside the current_element
     #print(current_element.name)
     a_tag = current_element.find("a")
@@ -303,59 +254,43 @@ def get_structure_node_attributes(current_element, top_level_title: str, node_pa
         exit(1)
     
     
-    # Get content from the second child element of a_tag
-    node_tags = None
-
-
-
     title_classifier = node_name.split(" ")[0]
     title_classifier = title_classifier.replace("[", "")
-    node_level_classifier = title_classifier.replace("]", "")
+    level_classifier = title_classifier.replace("]", "")
 
-    try:
-        temp = node_name.split(" ")[1]
-        if(temp[-1] == "."):
-            temp = temp[:-1]
-        node_type = "structure"
-        chapter_number = int(temp[0])
+   
+    temp = node_name.split(" ")[1]
+    if(temp[-1] == "."):
+        temp = temp[:-1]
+    node_type = "structure"
+    chapter_number = int(temp[0])
         
-    except:
-        if (node_parent.level_classifier == "code"):
-            node_type = "reference"
-            node_level_classifier = title_schema[3]
-            
-
-
-    node_link = link
     # Node graph traversal stuff
-    node_id = node_parent.node_id
+    node_id = f"{node_parent.node_id}/Temporary"
     
-    row_data = Node(node_id, node_parent, top_level_title, node_type, node_level_classifier=node_level_classifier, node_name=node_name, node_link=node_link, node_tags=node_tags)
-    return row_data
+    partial_node_data = Node(
+        id=node_id, 
+        link=link,
+        parent=node_parent.node_id, 
+        top_level_title=node_parent.top_level_title, 
+        node_type=node_type, 
+        level_classifier=level_classifier, 
+        node_name=node_name
+    )
+    return partial_node_data
     
     
 
-def scrape_content_node(scraping_node: Node, top_level_title: str):
+def scrape_content_node(scraping_node: Node):
 
-    url = scraping_node.link
     
-    try:
-        response = make_request(url)
-        data = response.read()      # a `bytes` object
-        text = data.decode('utf-8') # a `str`; 
-        soup = BeautifulSoup(text, 'html.parser')
-    # Process the response here
-    except URLError as e:
-        # Handle the error after the final retry attempt has failed
-        print(f"Failed to retrieve the URL: {e}")
-        exit(1)
     
    
+    soup = get_url_as_soup(url=scraping_node.link)
 
     container = soup.find(id="manylawsections")
     if (not container):
         print("manylawsections container not found!")
-        print(url)
         return
 
     divCon = container.contents[-1]
@@ -559,7 +494,7 @@ def get_nested_content_nodes(div_elements, parent_node, top_level_title):
     #                 if (hasAddendum) {
     #                     // Update base_node to indicate that it is an addendum
     #                     base_node.title = 'Addendum';
-    #                     base_node.node_level_classifier = 'Addendum';
+    #                     base_node.level_classifier = 'Addendum';
     #                 }
                     
     #             // Multi node case. Create a new node for the first "placeholder" title, then update base_node with information for the second node
