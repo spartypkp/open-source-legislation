@@ -17,7 +17,7 @@ import time
 import json
 
 DIR = os.path.dirname(os.path.realpath(__file__))
-print(sys.path)
+
 from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
 from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 
@@ -60,7 +60,7 @@ def scrape_per_title(corpus_node: Node, url: str):
     title_container = soup.find(class_="topTitle")
     title_name = title_container.get_text().strip()
     number = title_name.split(" ")[1]
-    top_level_title = node_number
+    top_level_title = number
     parent = corpus_node.node_id
     level_classifier = "title"
     node_type = "structure"
@@ -78,8 +78,8 @@ def scrape_per_title(corpus_node: Node, url: str):
         parent=parent,
         number=number
     )
-    print(f"-Inserting: {title_node_id}")
-    insert_node(title_node, TABLE_NAME, True)
+   
+    insert_node(title_node, TABLE_NAME, True, True)
 
     chapter_container = title_container.parent.parent.parent
     
@@ -108,7 +108,7 @@ def scrape_per_title(corpus_node: Node, url: str):
             number=node_number
         )
         
-        insert_node(chapter_node, TABLE_NAME)
+        insert_node(chapter_node, TABLE_NAME, debug_mode=True)
         
 
         article_container = header.next_sibling
@@ -137,7 +137,7 @@ def scrape_per_title(corpus_node: Node, url: str):
                     parent=chapter_node_id,
                     number=node_number
                 )
-                insert_node(article_node, TABLE_NAME)
+                insert_node(article_node, TABLE_NAME, debug_mode=True)
 
             # There is no article, goes straight from chapter to section
             except:
@@ -159,19 +159,22 @@ def scrape_per_title(corpus_node: Node, url: str):
                 node_level_classifier = "section"
                 node_type = "content"
                 node_name = f"{node_name_start} {node_name_end}"
-                node_id = f"{article_node_id}{node_level_classifier}={node_number}"
+                node_id = f"{article_node_id}/{node_level_classifier}={node_number}"
 
                 node_text = NodeText()
                 node_addendum = None
                 node_citation = f"A.R.S. § {top_level_title}-{node_number}"
                 
+                # Get the separate html page for each Section to scrape
                 section_soup = get_url_as_soup(node_link)
 
                 text_container = section_soup.find(class_="content-sidebar-wrap").find(class_="first")
-                
+                # For all flat <p> tags, add them to node_text
                 for p in text_container.find_all("p"):
                     txt = p.get_text().strip()
-                    node_text.add_paragraph(text=txt)
+                    # Do not add empty <p> tags as paragraphs
+                    if txt != "":
+                        node_text.add_paragraph(text=txt)
                 
                 section_node = Node(
                     id=node_id,
@@ -186,7 +189,9 @@ def scrape_per_title(corpus_node: Node, url: str):
                     addendum=node_addendum,
                     parent=article_node_id
                 )
-                insert_node(section_node, TABLE_NAME)
+                
+                insert_node(section_node, TABLE_NAME, debug_mode=True)
+                
     
             
     

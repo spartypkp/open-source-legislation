@@ -27,8 +27,8 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://alison.legislature.state.al.us"
 TOC_URL = "https://alison.legislature.state.al.us/code-of-alabama"
-SKIP_TITLE = 0 
-RESERVED_KEYWORDS = ["Repealed"]
+SKIP_TITLE = 6
+RESERVED_KEYWORDS = [" RESERVED."]
 # === Jurisdiction Specific Global Variables ===
 # Selenium Driver
 DRIVER = None
@@ -46,7 +46,10 @@ def main():
     all_titles = toc_content.find_elements(By.CLASS_NAME, "code-item")
 
     for i, current_element in enumerate(all_titles):
-        recursive_scrape(corpus_node, current_element )
+        # Helpful for partial scraping during development
+        if i < SKIP_TITLE:
+            continue
+        recursive_scrape(corpus_node, current_element)
 
 def recursive_scrape(node_parent: Node, current_element: WebElement):
     """
@@ -61,6 +64,7 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
     number = tag_text.split(" ")[1]
     node_name = tag_text
 
+
     if level_classifier == "title":
         top_level_title = number
     else:
@@ -69,11 +73,20 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
     node_type = "structure"
     node_text, addendum = None, None
     link = TOC_URL
+
+    status=None
+    for word in RESERVED_KEYWORDS:
+        if word in node_name:
+            status="reserved"
+            break
+    
     if level_classifier == "section":
         citation = f"Al. Stat. § {number}"
         # Get the separate section for text
         text_element = parent_element.find_element(By.CLASS_NAME, "html-content")
-        node_text, addendum = parse_text_element(text_element)
+        # Don't get node_text and addendum for reserved sections, it's werid stuff
+        if not status:
+            node_text, addendum = parse_text_element(text_element)
         node_type = "content"
 
     else:
@@ -83,7 +96,9 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
         id=node_id,
         citation=citation,
         link=link,
+        status=status,
         node_type=node_type,
+        number=number,
         node_name=node_name,
         top_level_title=top_level_title,
         level_classifier=level_classifier,
@@ -118,13 +133,21 @@ def parse_text_element(text_element: WebElement) -> Tuple[NodeText, Addendum]:
     # Alabama Code NodeText is pretty vanilla. All flat <p> tags, no discernible features to extract.
     for i, p_tag in enumerate(p_tags):
         text = p_tag.text
-
-        node_text.add_paragraph(text=text)
+        if text != "":
+            node_text.add_paragraph(text=text)
 
     addendum = Addendum()
-    addendum_tag = text_element.find_element(By.TAG_NAME, "i")
-    # Again, bland Addendum. Default to "history" type
-    addendum.history = AddendumType(text=addendum_tag.text)
+    try:
+        addendum_tag = text_element.find_element(By.TAG_NAME, "i")
+        # Again, bland Addendum. Default to "history" type
+        if(addendum_tag.text != ""):
+            addendum.history = AddendumType(text=addendum_tag.text)
+    except:
+        print(f"Could not find addendum_tag!")
+    # If no addendum is found/added, set addendum to None
+        
+    if not addendum.history:
+        addendum=None
 
     return node_text, addendum
     
