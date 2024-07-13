@@ -90,7 +90,7 @@ def scrape_all_titles(corpus_node: Node):
             link=link,
             parent=corpus_node.node_id
         )
-        print(f"Inserting: {title_node_id}")
+        print(f"-Inserting: {title_node_id}")
         inserted_node = insert_node(node=title_node, table_name=TABLE_NAME, ignore_duplicate=True)
 
         # Find the parent element of the title container, using By.XPATh
@@ -160,7 +160,7 @@ def scrape_all_chapters(top_level_title: str, node_parent: Node):
          ## INSERT STRUCTURE NODE, if it's already there, skip it
         try:
             insert_node(node=chapter_node, table_name=TABLE_NAME)
-            print(f"Inserting: {node_id}")
+            print(f"-Inserting: {node_id}")
         except:
             print("** Skipping:",node_id)
             continue
@@ -180,22 +180,20 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
     
     sections_container = DRIVER.find_element(By.ID, "ChapterToc")
     
-    _all_sections = sections_container.find_elements(By.TAG_NAME, "a")
+    _all_sections = sections_container.find_elements(By.TAG_NAME, "li")
 
     # can I call this concurrently with
     for i in range(0, len(_all_sections)):
-
+        #print(f"Index: {i}")
         sections_container = DRIVER.find_element(By.ID, "ChapterToc")
         
-       
+        all_sections = sections_container.find_elements(By.TAG_NAME, "li")
 
-        all_sections = sections_container.find_elements(By.TAG_NAME, "a")
-        section_container_raw = all_sections[i]
+        section_container_raw = all_sections[i].find_element(By.TAG_NAME, "a")
         section_container = BeautifulSoup(section_container_raw.get_attribute("outerHTML"), features="html.parser")
 
-    
-        
         node_name = section_container.get_text().strip()
+        print(f"Name={node_name}")
         
         if "No Sections" in node_name:
             return
@@ -217,6 +215,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
         node_type = "content"
         level_classifier = "section"
         link = TOC_URL + "#" + citation
+        node_text=None
 
         status=None
         for word in RESERVED_KEYWORDS:
@@ -226,7 +225,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
         
 
         # TODO: Needs refactoring to work with Pydantic Models
-        if status != "reserved":
+        if not status:
             
             #Example section link:  https://www.akleg.gov/basis/statutes.asp#02.15.010
             
@@ -309,10 +308,12 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                     # Skip bold
                     if iterator.name == "b":
                         break
-                    reference_hub = ReferenceHub()
+                    
                     # Get the text, remove whitespace, check if tag is anchor tag
                     txt = iterator.get_text().strip()
                     if iterator.name == "a":
+                        if reference_hub is None:
+                            reference_hub = ReferenceHub()
                         href = iterator["href"]
                         # Indicates a same-site (same corpus) reference, corpus is None
                         if "#" in href:
@@ -330,7 +331,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                     node_text.add_paragraph(text=txt, reference_hub=reference_hub)
                 else:
                     txt = iterator
-                    print(txt)
+                    #print(txt)
                     if txt == "":
                         continue
             # Process the addendum container
@@ -346,7 +347,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                         if element.name == "br":
                             continue
                         txt = element.get_text().strip()
-                        print(txt)
+                        #print(txt)
                         if element.name == "h5":
                             category = element.get_text().strip()
                             continue
@@ -385,7 +386,12 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
             section_node_id = f"{node_parent.node_id}/{level_classifier}={number}"
             parent=node_parent.node_id
 
-            
+        # Don't pollute rows with empty dictionaries
+        if core_metadata == {}:
+            core_metadata=None
+        
+        
+
         section_node = Node(
             id=section_node_id, 
             top_level_title=top_level_title, 
