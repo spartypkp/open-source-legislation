@@ -1,10 +1,12 @@
+<img width="100%" height="200" src="https://github.com/spartypkp/open-source-legislation/blob/main/banner-xl.png?raw=true">
+
 # open-source-legislation
 
-Welcome to open-source-legislation, a comprehensive Python-based solution designed for automating the extraction of legislative information from official .gov websites.
+Welcome to open-source-legislation, a comprehensive Python-based solution designed for automating the scraping and processing of primary source legislation into an PostgreSQL knowledge graph, ready for use with LLMs. Our dream is to provide a centralized and open platform for developers and legal engineers to freely utilize legislation data. 
 
 ## Project Overview
 
-open-source-legislation is an open-source project aimed at scraping legislative data from government websites, processing it for use with LLMs (Large Language Models), and loading it into SQL databases. This project supports all 50 U.S. states, federal jurisdictions, and some special jurisdictions.
+open-source-legislation is an open-source project aimed at scraping primary source legislation data, processing it for use with LLMs (Large Language Models), and loading it into SQL databases. Each legal jurisdiction and corpus of legal document has a separate scraper and processor, which can be run individually or concurrently to directly scrape and process current legislation. The project is currently focused on the scraping and processing of statutes from all US states, the US Federal Jurisdiction, with some experimentation in other global and special legal jurisdictions.
 
 ## Installation and Setup
 
@@ -48,19 +50,6 @@ We welcome contributions from the community! Please read our [CONTRIBUTING.md](C
 - **Reserved:** Indicates that this piece of legislation (structure or content node) is no longer available because the legislature has restructured, renumbered, or repealed it.
 - **Soup:** The BeautifulSoup object in Python that contains the HTML of the entire current webpage.
 
-## Scraping Methods
-
-### Recursive Method
-
-Used for jurisdictions where levels are nested within each other.
-
-### Iterative Method - Regular
-
-Used when levels follow a consistent order and are always the same.
-
-### Iterative Method - Stack
-
-Used when all structure nodes are on one page and require a stack data structure to handle.
 
 ## Additional Resources
 
