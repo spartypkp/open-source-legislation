@@ -26,7 +26,6 @@ def generate_json_from_structure(base_path):
 
         # Filter out organizing directories for country, jurisdiction, corpus identification
         effective_path = [dir for dir in full_path if not (dir.startswith("(") and dir.endswith(")"))]
-        
 
         for file in files:
             if 'scrape' in file and len(effective_path) >= 4:
@@ -34,14 +33,14 @@ def generate_json_from_structure(base_path):
                 country = effective_path[-3]
                 jurisdiction = effective_path[-2]
                 corpus = effective_path[-1]
-                file_path = os.path.join(root, file)  # Full path to the scrape.py file including organizational dirs
+                parent_directory = root  # Parent directory of the scrape.py file
 
                 # Append the new entry to the data list
                 data.append({
                     "Country": country,
                     "Jurisdiction": jurisdiction,
                     "Corpus": corpus,
-                    "FilePath": file_path,  # Add full file path to the JSON entry
+                    "FilePath": parent_directory,  # Add parent directory path to the JSON entry
                     "Status": "Refactoring",
                     "LastUpdated": current_date
                 })
@@ -57,8 +56,6 @@ def generate_json_from_structure(base_path):
     print("JSON file generated successfully.")
 
 
-
-
 def generate_markdown_table(json_filepath):
     try:
         # Load the data from the JSON file
@@ -69,7 +66,7 @@ def generate_markdown_table(json_filepath):
         base_url = "https://github.com/spartypkp/open-source-legislation/blob/main/"
 
         # Markdown table header
-        header = "| Country | Jurisdiction | Corpus | Status | Last Updated | File Path |\n"
+        header = "| Country | Jurisdiction | Corpus | Status | Last Updated | Link |\n"
         divider = "|---------|--------------|--------|--------|--------------|-----------|\n"
 
         # Start the markdown output with the header and divider

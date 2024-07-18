@@ -12,53 +12,53 @@ We propose a unified schema for representing legislation as a hierarchical graph
 
 
 ## Supported Legislation
-| Country | Jurisdiction | Corpus | Status | Last Updated | File Path |
+| Country | Jurisdiction | Corpus | Status | Last Updated | Link |
 |---------|--------------|--------|--------|--------------|-----------|
-| mhl | federal | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/mhl/federal/statutes/scrapeMHL.py) |
-| us | ak | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ak/statutes/scrapeAK.py) |
-| us | al | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/al/statutes/scrapeAL.py) |
-| us | az | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/az/statutes/scrapeAZ.py) |
-| us | ca | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ca/statutes/scrapeCA.py) |
-| us | co | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/co/statutes/scrapeCO.py) |
-| us | ct | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ct/statutes/scrapeCT.py) |
-| us | de | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/de/statutes/scrapeDE.py) |
-| us | federal | ecfr | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/ecfr/scrapeECFR.py) |
-| us | federal | usc | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/usc/scrapeUSC.py) |
-| us | federal | aim | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/aim/scrapeAIM.py) |
-| us | fl | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes/scrapeFL.py) |
-| us | hi | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes/scrapeHI.py) |
-| us | ia | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes/scrapeIA.py) |
-| us | id | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes/scrapeID.py) |
-| us | il | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes/scrapeIL.py) |
-| us | in | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes/scrapeIN.py) |
-| us | ks | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ks/statutes/scrapeKS.py) |
-| us | ky | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ky/statutes/scrapeKY.py) |
-| us | la | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/la/statutes/scrapeLA.py) |
-| us | ma | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ma/statutes/scrapeMA.py) |
-| us | md | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/md/statutes/scrapeMD.py) |
-| us | me | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/me/statutes/scrapeME.py) |
-| us | mi | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mi/statutes/scrapeMI.py) |
-| us | mn | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mn/statutes/scrapeMN.py) |
-| us | mo | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mo/statutes/scrapeMO.py) |
-| us | mt | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mt/statutes/scrapeMT.py) |
-| us | nc | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nc/statutes/scrapeNC.py) |
-| us | nd | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nd/statutes/scrapeND.py) |
-| us | ne | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ne/statutes/scrapeNE.py) |
-| us | nh | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nh/statutes/scrapeNH.py) |
-| us | nm | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nm/statutes/scrapeNM.py) |
-| us | ny | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ny/statutes/scrapeNY.py) |
-| us | oh | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/oh/statutes/scrapeOH.py) |
-| us | or | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/or/statutes/scrapeOR.py) |
-| us | pa | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/pa/statutes/scrapePA.py) |
-| us | ri | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ri/statutes/scrapeRI.py) |
-| us | sc | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sc/statutes/scrapeSC.py) |
-| us | sd | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sd/statutes/2a_scrape_selenium.py) |
-| us | tx | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/tx/statutes/scrapeTX.py) |
-| us | ut | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ut/statutes/scrapeUT.py) |
-| us | vt | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/vt/statutes/scrapeVT.py) |
-| us | wa | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wa/statutes/scrapeWA.py) |
-| us | wi | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wi/statutes/scrapeWI.py) |
-| us | wv | statutes | Refactoring | 2024-07-18T12:45:56.681662 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wv/statutes/scrapeWV.py) |
+| mhl | federal | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/mhl/federal/statutes) |
+| us | ak | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ak/statutes) |
+| us | al | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/al/statutes) |
+| us | az | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/az/statutes) |
+| us | ca | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ca/statutes) |
+| us | co | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/co/statutes) |
+| us | ct | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ct/statutes) |
+| us | de | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/de/statutes) |
+| us | federal | ecfr | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/ecfr) |
+| us | federal | usc | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/usc) |
+| us | federal | aim | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/aim) |
+| us | fl | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) |
+| us | hi | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes) |
+| us | ia | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes) |
+| us | id | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) |
+| us | il | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes) |
+| us | in | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes) |
+| us | ks | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ks/statutes) |
+| us | ky | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ky/statutes) |
+| us | la | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/la/statutes) |
+| us | ma | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ma/statutes) |
+| us | md | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/md/statutes) |
+| us | me | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/me/statutes) |
+| us | mi | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mi/statutes) |
+| us | mn | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mn/statutes) |
+| us | mo | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mo/statutes) |
+| us | mt | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mt/statutes) |
+| us | nc | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nc/statutes) |
+| us | nd | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nd/statutes) |
+| us | ne | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ne/statutes) |
+| us | nh | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nh/statutes) |
+| us | nm | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nm/statutes) |
+| us | ny | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ny/statutes) |
+| us | oh | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/oh/statutes) |
+| us | or | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/or/statutes) |
+| us | pa | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/pa/statutes) |
+| us | ri | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ri/statutes) |
+| us | sc | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sc/statutes) |
+| us | sd | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sd/statutes) |
+| us | tx | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/tx/statutes) |
+| us | ut | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ut/statutes) |
+| us | vt | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/vt/statutes) |
+| us | wa | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wa/statutes) |
+| us | wi | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wi/statutes) |
+| us | wv | statutes | Refactoring | 2024-07-18T14:14:23.318085 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wv/statutes) |
 
 Legislation status tracked in real time.
 
@@ -67,8 +67,76 @@ Legislation status tracked in real time.
 
 Our dream is to curate a platform and community dedicated to providing primary source legislation data in a unified and accessible format. Building applications in the legal field is difficult considering the incredible barriers to accessing legislation data in a standardized format for use with code. A legal engineer wanting to build an application which relies on primary source legislation would first need to spend considerable time and effort sourcing this legislative data before they could even begin to build. We want to remove these barriers, and provide instant and easy access so that our community can just start building. We believe legal data and law itself is a public good, and should be readily and easily accessible for all.
 
-## Bulk Data Downloads
-We aim to provide bulk data downloads of primary source legislation for every supported jurisdiction and corpus. ** ADD EXAMPLES ** 
+## Downloading Legislation Data 
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/sql-dump.png?raw=true">
+
+We aim to provide data downloads of primary source legislation for every supported jurisdiction and corpus. Currently, every supported corpus of legislation has a corresponding .sql file available for download. Running this SQL file will create that corpus's corresponding PostgresSQL file using individual insert statements. Follow these steps to create a table for each corpus you want:
+
+### Find the Corpus's Repository
+Go to the "## Supported Legislation" table and click on the link of the requested corpus of legislation.
+
+### Download the Corpus's .sql File
+The .sql file lives directly under the corpus parent repository, with the filename {country}_{jurisdiction}_{corpus}.sql.
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/corpus-filepath.png?raw=true">
+Note: If you already cloned the repository locally, skip this step.
+
+### Run the SQL File
+There are different ways to run the SQL file. I recommend using psql.
+
+#### Installing psql
+Windows
+Download and install PostgreSQL from the official website:
+https://www.postgresql.org/download/windows/
+During the installation process, make sure to check the box for installing psql.
+Once the installation is complete, open the Command Prompt and type psql --version to verify the installation.
+MacOS
+Install PostgreSQL using Homebrew:
+```sh
+brew install postgresql
+```
+After installation, you can start the PostgreSQL service:
+```sh
+brew services start postgresql
+```
+Verify the installation by typing psql --version in your terminal.
+Linux
+Install PostgreSQL using your package manager. For example, on Ubuntu:
+```sh
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+Switch to the postgres user and start the PostgreSQL prompt:
+```sh
+sudo -i -u postgres
+psql
+```
+Verify the installation by typing psql --version.
+### #Running the SQL File
+Open Terminal or Command Prompt
+Open your terminal or command prompt.
+
+Navigate to the Directory Containing the .sql File
+Use the cd command to navigate to the directory where your .sql file is located.
+```sh
+cd path/to/your/sql/file
+```
+
+#### Run the SQL File Using psql
+Execute the following command to run your .sql file and connect it to your local PostgreSQL database:
+```sh
+psql -U your_username -d your_database -f your_file.sql
+```
+Replace your_username with your PostgreSQL username, your_database with the name of your database, and your_file.sql with the name of your .sql file.
+
+#### Example
+Assuming your username is myuser, your database name is mydatabase, and your file is named us_az_statutes.sql, the command would be:
+```sh
+psql -U myuser -d mydatabase -f us_az_statutes.sql
+```
+
+This command will prompt you to enter your PostgreSQL password. After entering the password, it will execute the .sql file and populate your database with the data from the file.
+
+By following these steps, you can successfully download and run the .sql files to create tables for each corpus you need in your PostgreSQL database.
 
 ## Running Scrapers Locally
 You can also run scrapers locally. 
