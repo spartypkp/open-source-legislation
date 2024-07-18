@@ -12,53 +12,53 @@ We propose a unified schema for representing legislation as a hierarchical graph
 
 
 ## Supported Legislation
-| Country | Jurisdiction | Corpus | Description | Status | Dev Comment | Last Updated | Source Code | | Download |
-|---------|--------------|--------|--------|--------|--------------|--------------|-----------|-----------|
-| mhl | federal | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T15:59:24.920177 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/mhl/federal/statutes) | N/A |
-| us | ak | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ak/statutes) | N/A |
-| us | al | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/al/statutes) | N/A |
-| us | az | statutes | Statutes | Testing 🟡 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/az/statutes) | [view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/az/statutes/us_az_statutes.sql) |
-| us | ca | statutes | Code | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ca/statutes) | N/A |
-| us | co | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/co/statutes) | N/A |
-| us | ct | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ct/statutes) | N/A |
-| us | de | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/de/statutes) | N/A |
-| us | federal | ecfr | Code of Federal Regulations - Electronic | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/ecfr) | N/A |
-| us | federal | usc | US Code | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/usc) | N/A |
-| us | federal | aim | Aeronautical Information Manual | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/aim) | N/A |
-| us | fl | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) | N/A |
-| us | hi | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes) | N/A |
-| us | ia | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes) | N/A |
-| us | id | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) | N/A |
-| us | il | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes) | N/A |
-| us | in | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes) | N/A |
-| us | ks | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ks/statutes) | N/A |
-| us | ky | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ky/statutes) | N/A |
-| us | la | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/la/statutes) | N/A |
-| us | ma | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ma/statutes) | N/A |
-| us | md | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/md/statutes) | N/A |
-| us | me | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/me/statutes) | N/A |
-| us | mi | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mi/statutes) | N/A |
-| us | mn | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mn/statutes) | N/A |
-| us | mo | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mo/statutes) | N/A |
-| us | mt | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mt/statutes) | N/A |
-| us | nc | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nc/statutes) | N/A |
-| us | nd | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nd/statutes) | N/A |
-| us | ne | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ne/statutes) | N/A |
-| us | nh | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nh/statutes) | N/A |
-| us | nm | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nm/statutes) | N/A |
-| us | ny | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ny/statutes) | N/A |
-| us | oh | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/oh/statutes) | N/A |
-| us | or | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/or/statutes) | N/A |
-| us | pa | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/pa/statutes) | N/A |
-| us | ri | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ri/statutes) | N/A |
-| us | sc | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sc/statutes) | N/A |
-| us | sd | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sd/statutes) | N/A |
-| us | tx | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/tx/statutes) | N/A |
-| us | ut | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ut/statutes) | N/A |
-| us | vt | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/vt/statutes) | N/A |
-| us | wa | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wa/statutes) | N/A |
-| us | wi | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wi/statutes) | N/A |
-| us | wv | statutes | Statutes | Refactoring 🟠 |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wv/statutes) | N/A |
+| Country | Jurisdiction | Corpus | | Status | Dev Comment | Last Updated | Source Code | Download |
+|---------|--------------|------------------|---|---------|-------------|--------------|-------------|----------|
+| mhl - Republic of the Marshall Islands | federal - Federal Jurisdiction | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T15:59:24.920177 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/mhl/federal/statutes) | N/A |
+| us - United States | ak - Alaska | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ak/statutes) | N/A |
+| us - United States | al - Alabama | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/al/statutes) | N/A |
+| us - United States | az - Arizona | statutes - Statutes | 🟡 | Testing |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/az/statutes) | [view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/az/statutes/us_az_statutes.sql) |
+| us - United States | ca - California | statutes - Code | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ca/statutes) | N/A |
+| us - United States | co - Colorado | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/co/statutes) | N/A |
+| us - United States | ct - Conneticut | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ct/statutes) | N/A |
+| us - United States | de - Delaware | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/de/statutes) | N/A |
+| us - United States | federal - Federal Jurisdiction | ecfr - Code of Federal Regulations - Electronic | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/ecfr) | N/A |
+| us - United States | federal - Federal Jurisdiction | usc - US Code | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/usc) | N/A |
+| us - United States | federal - Federal Jurisdiction | aim - Aeronautical Information Manual | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/aim) | N/A |
+| us - United States | fl - Florida | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) | N/A |
+| us - United States | hi - Hawaii | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes) | N/A |
+| us - United States | ia - Iowa | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes) | N/A |
+| us - United States | id - Idaho | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) | N/A |
+| us - United States | il - Illinois | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes) | N/A |
+| us - United States | in - Indiana | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes) | N/A |
+| us - United States | ks - Kansas | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ks/statutes) | N/A |
+| us - United States | ky - Kentucky | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ky/statutes) | N/A |
+| us - United States | la - Louisianna | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/la/statutes) | N/A |
+| us - United States | ma - Massachussetts | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ma/statutes) | N/A |
+| us - United States | md - Maryland | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/md/statutes) | N/A |
+| us - United States | me - Maine | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/me/statutes) | N/A |
+| us - United States | mi - Michigan | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mi/statutes) | N/A |
+| us - United States | mn - Minnesota | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mn/statutes) | N/A |
+| us - United States | mo - Missouri | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mo/statutes) | N/A |
+| us - United States | mt - Montana | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/mt/statutes) | N/A |
+| us - United States | nc - North Carolina | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nc/statutes) | N/A |
+| us - United States | nd - North Dakota | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nd/statutes) | N/A |
+| us - United States | ne - Nebraska | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ne/statutes) | N/A |
+| us - United States | nh - New Hampshire | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nh/statutes) | N/A |
+| us - United States | nm - New Mexico | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/nm/statutes) | N/A |
+| us - United States | ny - New York | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ny/statutes) | N/A |
+| us - United States | oh - Ohio | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/oh/statutes) | N/A |
+| us - United States | or - Oregon | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/or/statutes) | N/A |
+| us - United States | pa - Pennsylvania | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/pa/statutes) | N/A |
+| us - United States | ri - Rhode Island | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ri/statutes) | N/A |
+| us - United States | sc - South Carolina | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sc/statutes) | N/A |
+| us - United States | sd - South Dakota | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sd/statutes) | N/A |
+| us - United States | tx - Texas | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/tx/statutes) | N/A |
+| us - United States | ut - Utah | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ut/statutes) | N/A |
+| us - United States | vt - Vermont | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/vt/statutes) | N/A |
+| us - United States | wa - Washington | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wa/statutes) | N/A |
+| us - United States | wi - Wisconsin | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wi/statutes) | N/A |
+| us - United States | wv - West Virginia | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T14:53:05.618081 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wv/statutes) | N/A |
 
 Legislation status tracked in real time.
 
@@ -108,7 +108,7 @@ sudo -i -u postgres
 psql
 ```
 Verify the installation by typing psql --version.
-### #Running the SQL File
+#### Running the SQL File
 Open Terminal or Command Prompt
 Open your terminal or command prompt.
 
@@ -118,7 +118,6 @@ Use the cd command to navigate to the directory where your .sql file is located.
 cd path/to/your/sql/file
 ```
 
-#### Run the SQL File Using psql
 Execute the following command to run your .sql file and connect it to your local PostgreSQL database:
 ```sh
 psql -U your_username -d your_database -f country_jurisdiction_corpus.sql
@@ -136,9 +135,9 @@ This command will prompt you to enter your PostgreSQL password. After entering t
 By following these steps, you can successfully download and run the .sql files to create tables for each corpus you need in your PostgreSQL database.
 
 ## Running Scrapers Locally
-You can also run scrapers locally. 
+Besides downloading data, this repository contains all of the source code on all supported corpus of legislation and the Python based scrapers which scraep, process, and clean the data. You are free to modify, use, and update these programs as you see fit. If you'd prefer to run them yourselves, which would allow for more regular updates, go for it! You can run these scrapers yourself by following these steps.
 
-
+### Setup Instructions
 1. **Clone the Repository:**
    ```bash
     git clone https://github.com/your-username/open-source-legislation.git
@@ -157,23 +156,23 @@ You can also run scrapers locally.
     ```
 
 4. **Set Up Database:**
-   #### CODE BLOCK
+   Ensure you have PostgresSQL installed and set up on your machine. Populate the database config file (**TODO**)
 
-## Usage Instructions
+### Running Scrapers
 
 To run an existing scraper for a specific jurisdiction (e.g., California statutes):
 
 1. **Navigate to the Scraper Directory:**
-   #### CODE BLOCK
+   Going to the "## Supported Legislation" table, click on the corpus of choice's "Source Code" field. This will take you to the location of the specific scraper within the correct corpus, jurisdiction, and country folder.
 
 2. **Run the Scraper:**
-   #### CODE BLOCK
+   Run the Python scraper normally.
 
-## Using Legislation Data
-**TODO**
+
 ### Python SDK
 **TODO**
 <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+
 ### Typescript SDK
 **TODO**
 
@@ -183,14 +182,13 @@ Populating knowledge graph
 ## Preparing Bulk Data for Usage with LLM
 More here
 
-## Installation and Setup
-
 
 ## Contributing
 
 We welcome contributions from the community! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to the project, including how to add new jurisdictions.
 
-## Key Terms
+## Extra Documentation
+Mega WIP lol
 
 - **Top_level_title:** The first explicit category used to split up legislation, always found as the first category on a main table of contents page.
 - **Reserved:** Indicates that this piece of legislation (structure or content node) is no longer available because the legislature has restructured, renumbered, or repealed it.

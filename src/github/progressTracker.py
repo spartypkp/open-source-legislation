@@ -78,9 +78,11 @@ def generate_json_from_structure(base_path):
                 # Append the new entry to the data list
                 data.append({
                     "Country": country,
+                    "Country_description": json_metadata[country]['description'],
                     "Jurisdiction": jurisdiction,
+                    "Jurisdiction_description": json_metadata[country][jurisdiction]['description'],
                     "Corpus": corpus,
-                    "Description": json_metadata[country][jurisdiction][corpus]["description"],
+                    "Corpus_description": json_metadata[country][jurisdiction][corpus]['description'],
                     "FilePath": parent_directory,  # Add parent directory path to the JSON entry
                     "Status": json_metadata[country][jurisdiction][corpus]["status"] ,
                     "DevComment": json_metadata[country][jurisdiction][corpus]["status_description"],
@@ -115,34 +117,35 @@ def generate_markdown_table(json_filepath):
         # Markdown table header
         
 
-        header = "| Country | Jurisdiction | Corpus | Description | Status | Dev Comment | Last Updated | Source Code | Download |\n"
-        divider = "|---------|--------------|--------|-------------|--------|-------------|--------------|-------------|----------|\n"
+        header = "| Country | Jurisdiction | Corpus | | Status | Dev Comment | Last Updated | Source Code | Download |\n"
+        divider = "|---------|--------------|------------------|---|---------|-------------|--------------|-------------|----------|\n"
 
         # Start the markdown output with the header and divider
         markdown_output = header + divider
 
         # Iterate through each entry in the JSON data
         for entry in data:
-            country = entry['Country']
-            jurisdiction = entry['Jurisdiction']
-            corpus = entry['Corpus']
-            description = entry['Description']
+            country = f"{entry['Country']} - {entry['Country_description']}"
+            jurisdiction = f"{entry['Jurisdiction']} - {entry['Jurisdiction_description']}"
+            corpus = f"{entry['Corpus']} - {entry['Corpus_description']}"
             status = entry['Status']
             dev_comment = entry['DevComment']
             last_updated = entry['LastUpdated']
             file_path = entry['FilePath']
             download_link = entry['DownloadLink']
 
+            # I think this breaks the table :( Remove for now
             if status == "Complete":
-                status += " 🟢"
+                status_emoji = "🟢"
             elif status == "Refactoring":
-                status += " 🟠"
+                status_emoji = "🟠"
             elif status == "In Progress":
-                status += " 🔵"
+                status_emoji = "🔵"
             elif status == "Testing":
-                status += " 🟡"
+                status_emoji = "🟡"
             else:
-                status += " 🔴"
+                status_emoji = "🔴"
+            
 
 
             # Convert the file path to a clickable URL, assuming the path starts within the GitHub repo
@@ -151,7 +154,7 @@ def generate_markdown_table(json_filepath):
             
 
             # Append each row to the markdown output
-            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {description} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link} |\n"
+            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {status_emoji} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link} |\n"
 
         # Write the complete markdown table to a file
         with open("src/github/status_table.md", "w") as write_file:
