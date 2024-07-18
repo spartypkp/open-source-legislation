@@ -1,8 +1,12 @@
-<img width="100%" height="200" src="https://github.com/spartypkp/open-source-legislation/blob/main/banner-xl.png?raw=true">
+<img width="100%" height="200" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/banner-xl.png?raw=true">
 
 # Open Sourcing the World's Legislation
 
-Welcome to open-source-legislation, a project which aims to provide access to global primary source legislation for all. The heart of the project is a Python based platform of webscrapers, individually tailored for each jurisdiction and corpus of legislation. We provide the capability to run these scrapers yourself, and populate your own SQL database of cleaned and processed primary source legislation. We propose a unified schema for representing legislation as a hierarchical graph of nodes which creates a rich knowledge graph for each jurisdiction, specifically designed for use with Large Language Models. Soon we will offer bulk data downloads for all primary source legislation, as well as Python and Typescript SDKs for immediate and easy usage.
+Welcome to open-source-legislation, a project which aims to provide access to global primary source legislation for all. The heart of the project is a Python based platform of webscrapers, individually tailored for each jurisdiction and corpus of legislation. We provide the capability to run these scrapers yourself, and populate your own SQL database of cleaned and processed primary source legislation. 
+
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulk-data.png?raw=true">
+We propose a unified schema for representing legislation as a hierarchical graph of nodes which creates a rich knowledge graph for each jurisdiction, specifically designed for use with Large Language Models. Soon we will offer bulk data downloads for all primary source legislation, as well as Python and Typescript SDKs for immediate and easy usage.
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/supabase-example.png?raw=true">
 
 ## Democratizing Legal Knowledge for All
 
@@ -18,6 +22,7 @@ You can also run scrapers locally. **TODO**
 **TODO**
 ### Python SDK
 **TODO**
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
 ### Typescript SDK
 **TODO**
 
