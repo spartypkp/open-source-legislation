@@ -113,8 +113,10 @@ def generate_markdown_table(json_filepath):
         base_url = "https://github.com/spartypkp/open-source-legislation/blob/main/"
 
         # Markdown table header
-        header = "| Country | Jurisdiction | Corpus | Description | Status | Dev Comment | Last Updated | Source Code | | Download |\n"
-        divider = "|---------|--------------|--------|--------|--------|--------------|--------------|-----------|-----------|\n"
+        
+
+        header = "| Country | Jurisdiction | Corpus | Description | Status | Dev Comment | Last Updated | Source Code | Download |\n"
+        divider = "|---------|--------------|--------|-------------|--------|-------------|--------------|-------------|----------|\n"
 
         # Start the markdown output with the header and divider
         markdown_output = header + divider
