@@ -1,12 +1,31 @@
 <img width="100%" height="200" src="https://github.com/spartypkp/open-source-legislation/blob/main/banner-xl.png?raw=true">
 
-# open-source-legislation
+# Open Sourcing the World's Legislation
 
-Welcome to open-source-legislation, a comprehensive Python-based solution designed for automating the scraping and processing of primary source legislation into an PostgreSQL knowledge graph, ready for use with LLMs. Our dream is to provide a centralized and open platform for developers and legal engineers to freely utilize legislation data. 
+Welcome to open-source-legislation, a project which aims to provide access to global primary source legislation for all. The heart of the project is a Python based platform of webscrapers, individually tailored for each jurisdiction and corpus of legislation. We provide the capability to run these scrapers yourself, and populate your own SQL database of cleaned and processed primary source legislation. We propose a unified schema for representing legislation as a hierarchical graph of nodes which creates a rich knowledge graph for each jurisdiction, specifically designed for use with Large Language Models. Soon we will offer bulk data downloads for all primary source legislation, as well as Python and Typescript SDKs for immediate and easy usage.
 
-## Project Overview
+## Democratizing Legal Knowledge for All
 
-open-source-legislation is an open-source project aimed at scraping primary source legislation data, processing it for use with LLMs (Large Language Models), and loading it into SQL databases. Each legal jurisdiction and corpus of legal document has a separate scraper and processor, which can be run individually or concurrently to directly scrape and process current legislation. The project is currently focused on the scraping and processing of statutes from all US states, the US Federal Jurisdiction, with some experimentation in other global and special legal jurisdictions.
+Our dream is to curate a platform and community dedicated to providing primary source legislation data in a unified and accessible format. Building applications in the legal field is difficult considering the incredible barriers to accessing legislation data in a standardized format for use with code. A legal engineer wanting to build an application which relies on primary source legislation would first need to spend considerable time and effort sourcing this legislative data before they could even begin to build. We want to remove these barriers, and provide instant and easy access so that our community can just start building. We believe legal data and law itself is a public good, and should be readily and easily accessible for all.
+
+## Bulk Data Downloads
+We aim to provide bulk data downloads of primary source legislation for every supported jurisdiction and corpus. ** ADD EXAMPLES ** 
+
+## Running Scrapers Locally
+You can also run scrapers locally. **TODO**
+
+## Using Legislation Data
+**TODO**
+### Python SDK
+**TODO**
+### Typescript SDK
+**TODO**
+
+## About Our Schema
+Populating knowledge graph
+
+## Preparing Bulk Data for Usage with LLM
+More here
 
 ## Installation and Setup
 
