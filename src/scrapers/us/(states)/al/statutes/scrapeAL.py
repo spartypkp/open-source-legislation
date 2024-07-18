@@ -27,7 +27,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://alison.legislature.state.al.us"
 TOC_URL = "https://alison.legislature.state.al.us/code-of-alabama"
-SKIP_TITLE = 9
+SKIP_TITLE = 11
 RESERVED_KEYWORDS = [" RESERVED."]
 # === Jurisdiction Specific Global Variables ===
 # Selenium Driver
