@@ -7,18 +7,25 @@ def main():
     generate_json_from_structure(base_directory)
 
     json_file_path = 'src/github/scraper_status.json'
-    generate_markdown_table(json_file_path)
+    status_table = generate_markdown_table(json_file_path)
 
-    update_readme_with_status_table()
+    update_readme_with_status_table(status_table)
 
 
 import os
 from datetime import datetime
 
+
+
 def generate_json_from_structure(base_path):
     # Define the structure of the JSON data
     data = []
     current_date = datetime.now().isoformat()
+
+    json_metadata = {}
+    with open(f"src/utils/legislation_metadata.json", "r") as read_file:
+        text = read_file.read()
+    json_metadata = json.loads(text)
 
     for root, dirs, files in os.walk(base_path):
         # Use full path for file tracking
@@ -27,6 +34,8 @@ def generate_json_from_structure(base_path):
         # Filter out organizing directories for country, jurisdiction, corpus identification
         effective_path = [dir for dir in full_path if not (dir.startswith("(") and dir.endswith(")"))]
 
+        
+
         for file in files:
             if 'scrape' in file and len(effective_path) >= 4:
                 # Parse the path to get country, jurisdiction, and corpus
@@ -34,15 +43,49 @@ def generate_json_from_structure(base_path):
                 jurisdiction = effective_path[-2]
                 corpus = effective_path[-1]
                 parent_directory = root  # Parent directory of the scrape.py file
+                
+                # Newly added country found in file path, update metadata
+                if country not in json_metadata:
+                    json_metadata[country] = {"description": "PLACEHOLDER!"}
+                
+                # Newly added jurisdiction found in file path
+                if jurisdiction not in json_metadata[country]:
+                    json_metadata[country][jurisdiction] = {"description": "PLACEHOLDER!"}
+                
+                # Newly added corpus (and scraper!)
+                if corpus not in json_metadata[country][jurisdiction]:
+                    json_metadata[country][jurisdiction][corpus] = {
+                        "description": "PLACEHOLDER!", 
+                        "download_link_available": False,
+                        "status": "Planning",
+                        "status_description": "Initial planning - new corpus found",
+                        "last_updated": current_date,
+                        "file_path": parent_directory
+                    }
+                # Update old schema, temporary
+                if "file_path" not in json_metadata[country][jurisdiction][corpus]:
+                    json_metadata[country][jurisdiction][corpus]["file_path"] = parent_directory
+
+                print(f"Country: {country}, Jurisdiction: {jurisdiction}, Corpus: {corpus}")
+                print(f"Test", json_metadata[country][jurisdiction])
+
+
+                if json_metadata[country][jurisdiction][corpus]["download_link_available"]:
+                    download_link = f"[view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/{country}/{jurisdiction}/{corpus}/{country}_{jurisdiction}_{corpus}.sql)"
+                else:
+                    download_link = "N/A"
 
                 # Append the new entry to the data list
                 data.append({
                     "Country": country,
                     "Jurisdiction": jurisdiction,
                     "Corpus": corpus,
+                    "Description": json_metadata[country][jurisdiction][corpus]["description"],
                     "FilePath": parent_directory,  # Add parent directory path to the JSON entry
-                    "Status": "Refactoring",
-                    "LastUpdated": current_date
+                    "Status": json_metadata[country][jurisdiction][corpus]["status"] ,
+                    "DevComment": json_metadata[country][jurisdiction][corpus]["status_description"],
+                    "LastUpdated": json_metadata[country][jurisdiction][corpus]["last_updated"],
+                    "DownloadLink": download_link
                 })
                 break  # Assuming only one scrape.py per directory as mentioned
 
@@ -52,8 +95,12 @@ def generate_json_from_structure(base_path):
     # Write the sorted data to a JSON file
     with open("src/github/scraper_status.json", 'w') as json_file:
         json.dump(data_sorted, json_file, indent=4)
+    
+    # Write updated metadata to JSON file
+    with open("src/utils/legislation_metadata.json", "w") as write_file:
+        json.dump(json_metadata, write_file, indent=4) 
 
-    print("JSON file generated successfully.")
+    print("JSON files updated successfully.")
 
 
 def generate_markdown_table(json_filepath):
@@ -66,8 +113,8 @@ def generate_markdown_table(json_filepath):
         base_url = "https://github.com/spartypkp/open-source-legislation/blob/main/"
 
         # Markdown table header
-        header = "| Country | Jurisdiction | Corpus | Status | Last Updated | Link |\n"
-        divider = "|---------|--------------|--------|--------|--------------|-----------|\n"
+        header = "| Country | Jurisdiction | Corpus | Description | Status | Dev Comment | Last Updated | Source Code | | Download |\n"
+        divider = "|---------|--------------|--------|--------|--------|--------------|--------------|-----------|-----------|\n"
 
         # Start the markdown output with the header and divider
         markdown_output = header + divider
@@ -77,29 +124,45 @@ def generate_markdown_table(json_filepath):
             country = entry['Country']
             jurisdiction = entry['Jurisdiction']
             corpus = entry['Corpus']
+            description = entry['Description']
             status = entry['Status']
+            dev_comment = entry['DevComment']
             last_updated = entry['LastUpdated']
             file_path = entry['FilePath']
+            download_link = entry['DownloadLink']
+
+            if status == "Complete":
+                status += " 🟢"
+            elif status == "Refactoring":
+                status += " 🟠"
+            elif status == "In Progress":
+                status += " 🔵"
+            elif status == "Testing":
+                status += " 🟡"
+            else:
+                status += " 🔴"
+
 
             # Convert the file path to a clickable URL, assuming the path starts within the GitHub repo
             relative_path = file_path.split('open-source-legislation/')[-1]
             clickable_path = f"[view]({base_url + relative_path})"
+            
 
             # Append each row to the markdown output
-            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {status} | {last_updated} | {clickable_path} |\n"
+            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {description} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link}\n"
 
         # Write the complete markdown table to a file
         with open("src/github/status_table.md", "w") as write_file:
             write_file.write(markdown_output)
+        return markdown_output
 
     except Exception as e:
         raise Exception(f"Error reading the JSON file or generating the table: {str(e)}")
 
 
-def update_readme_with_status_table():
+def update_readme_with_status_table(status_table):
     # Read the status table content from its Markdown file
-    with open('src/github/status_table.md', 'r') as table_file:
-        status_table = table_file.read()
+    
 
     # Read the current README content
     with open('README.md', 'r') as readme_file:

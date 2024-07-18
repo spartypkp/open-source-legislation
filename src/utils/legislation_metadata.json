@@ -1,0 +1,517 @@
+{
+    "us": {
+        "description": "United States",
+        "federal": {
+            "description": "Federal Jurisdiction",
+            "usc": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "US Code",
+                "file_path": "src/scrapers/us/federal/usc"
+            },
+            "ecfr": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Code of Federal Regulations - Electronic",
+                "file_path": "src/scrapers/us/federal/ecfr"
+            },
+            "aim": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Aeronautical Information Manual",
+                "file_path": "src/scrapers/us/federal/aim"
+            }
+        },
+        "ak": {
+            "description": "Alaska",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ak/statutes"
+            }
+        },
+        "al": {
+            "description": "Alabama",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/al/statutes"
+            }
+        },
+        "ar": {
+            "description": "Arkansas",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes"
+            }
+        },
+        "az": {
+            "description": "Arizona",
+            "statutes": {
+                "download_link_available": true,
+                "status": "Testing",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/az/statutes"
+            }
+        },
+        "ca": {
+            "description": "California",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Code",
+                "file_path": "src/scrapers/us/(states)/ca/statutes"
+            }
+        },
+        "co": {
+            "description": "Colorado",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/co/statutes"
+            }
+        },
+        "ct": {
+            "description": "Conneticut",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ct/statutes"
+            }
+        },
+        "de": {
+            "description": "Delaware",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/de/statutes"
+            }
+        },
+        "fl": {
+            "description": "Florida",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/fl/statutes"
+            }
+        },
+        "hi": {
+            "description": "Hawaii",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/hi/statutes"
+            }
+        },
+        "ia": {
+            "description": "Iowa",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ia/statutes"
+            }
+        },
+        "id": {
+            "description": "Idaho",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/id/statutes"
+            }
+        },
+        "il": {
+            "description": "Illinois",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/il/statutes"
+            }
+        },
+        "in": {
+            "description": "Indiana",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/in/statutes"
+            }
+        },
+        "ks": {
+            "description": "Kansas",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ks/statutes"
+            }
+        },
+        "ky": {
+            "description": "Kentucky",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ky/statutes"
+            }
+        },
+        "la": {
+            "description": "Louisianna",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/la/statutes"
+            }
+        },
+        "ma": {
+            "description": "Massachussetts",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ma/statutes"
+            }
+        },
+        "md": {
+            "description": "Maryland",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/md/statutes"
+            }
+        },
+        "me": {
+            "description": "Maine",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/me/statutes"
+            }
+        },
+        "mi": {
+            "description": "Michigan",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/mi/statutes"
+            }
+        },
+        "mn": {
+            "description": "Minnesota",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/mn/statutes"
+            }
+        },
+        "mo": {
+            "description": "Missouri",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/mo/statutes"
+            }
+        },
+        "mt": {
+            "description": "Montana",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/mt/statutes"
+            }
+        },
+        "nc": {
+            "description": "North Carolina",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/nc/statutes"
+            }
+        },
+        "nd": {
+            "description": "North Dakota",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/nd/statutes"
+            }
+        },
+        "ne": {
+            "description": "Nebraska",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ne/statutes"
+            }
+        },
+        "nh": {
+            "description": "New Hampshire",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/nh/statutes"
+            }
+        },
+        "nm": {
+            "description": "New Mexico",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/nm/statutes"
+            }
+        },
+        "ny": {
+            "description": "New York",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ny/statutes"
+            }
+        },
+        "oh": {
+            "description": "Ohio",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/oh/statutes"
+            }
+        },
+        "or": {
+            "description": "Oregon",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/or/statutes"
+            }
+        },
+        "pa": {
+            "description": "Pennsylvania",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/pa/statutes"
+            }
+        },
+        "ri": {
+            "description": "Rhode Island",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ri/statutes"
+            }
+        },
+        "sc": {
+            "description": "South Carolina",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/sc/statutes"
+            }
+        },
+        "sd": {
+            "description": "South Dakota",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/sd/statutes"
+            }
+        },
+        "tx": {
+            "description": "Texas",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/tx/statutes"
+            }
+        },
+        "ut": {
+            "description": "Utah",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/ut/statutes"
+            }
+        },
+        "va": {
+            "description": "Virginia",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes"
+            }
+        },
+        "vt": {
+            "description": "Vermont",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/vt/statutes"
+            }
+        },
+        "wa": {
+            "description": "Washington",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/wa/statutes"
+            }
+        },
+        "wi": {
+            "description": "Wisconsin",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/wi/statutes"
+            }
+        },
+        "wv": {
+            "description": "West Virginia",
+            "statutes": {
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T14:53:05.618081",
+                "description": "Statutes",
+                "file_path": "src/scrapers/us/(states)/wv/statutes"
+            }
+        }
+    },
+    "mhl": {
+        "description": "Republic of the Marshall Islands",
+        "federal": {
+            "description": "Federal Jurisdiction",
+            "statutes": {
+                "description": "Statutes",
+                "download_link_available": false,
+                "status": "Refactoring",
+                "status_description": "Major Overhaul WIP",
+                "last_updated": "2024-07-18T15:59:24.920177",
+                "file_path": "src/scrapers/mhl/federal/statutes"
+            }
+        }
+    }
+}

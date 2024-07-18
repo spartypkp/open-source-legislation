@@ -3,360 +3,495 @@
         "Country": "mhl",
         "Jurisdiction": "federal",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/mhl/federal/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T15:59:24.920177",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ak",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ak/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "al",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/al/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "az",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/az/statutes",
-        "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "Status": "Testing",
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "[view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/az/statutes/us_az_statutes.sql)"
     },
     {
         "Country": "us",
         "Jurisdiction": "ca",
         "Corpus": "statutes",
+        "Description": "Code",
         "FilePath": "src/scrapers/us/(states)/ca/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "co",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/co/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ct",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ct/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "de",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/de/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "federal",
         "Corpus": "ecfr",
+        "Description": "Code of Federal Regulations - Electronic",
         "FilePath": "src/scrapers/us/federal/ecfr",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "federal",
         "Corpus": "usc",
+        "Description": "US Code",
         "FilePath": "src/scrapers/us/federal/usc",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "federal",
         "Corpus": "aim",
+        "Description": "Aeronautical Information Manual",
         "FilePath": "src/scrapers/us/federal/aim",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "fl",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/fl/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "hi",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/hi/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ia",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ia/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "id",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/id/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "il",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/il/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "in",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/in/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ks",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ks/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ky",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ky/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "la",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/la/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ma",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ma/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "md",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/md/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "me",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/me/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "mi",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/mi/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "mn",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/mn/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "mo",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/mo/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "mt",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/mt/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "nc",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/nc/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "nd",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/nd/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ne",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ne/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "nh",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/nh/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "nm",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/nm/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ny",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ny/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "oh",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/oh/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "or",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/or/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "pa",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/pa/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ri",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ri/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "sc",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/sc/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "sd",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/sd/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "tx",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/tx/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "ut",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ut/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "vt",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/vt/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "wa",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/wa/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "wi",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/wi/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     },
     {
         "Country": "us",
         "Jurisdiction": "wv",
         "Corpus": "statutes",
+        "Description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/wv/statutes",
         "Status": "Refactoring",
-        "LastUpdated": "2024-07-18T14:14:23.318085"
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
     }
 ]
