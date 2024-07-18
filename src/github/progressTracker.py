@@ -149,7 +149,7 @@ def generate_markdown_table(json_filepath):
             
 
             # Append each row to the markdown output
-            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {description} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link}\n"
+            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {description} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link} |\n"
 
         # Write the complete markdown table to a file
         with open("src/github/status_table.md", "w") as write_file:
