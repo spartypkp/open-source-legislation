@@ -8,29 +8,37 @@ Welcome to open-source-legislation, a platform dedicated to democratizing access
 1. **Global Repository of Scraped Legislation**: Tap into our extensive database featuring detailed legislative content from countries and jurisdictions worldwide. The bottom line is we want to make this data easy to begin building with.
 
 2. **Download Processed SQL Legislation Data**: Primary source legislation is scraped and processed into SQL files with rich metadata tagging, making it easy to download and integrate directly into your databases. Download one or many different corpus of legislation from different countries and jurisdictions. 
+
 <div align="center">
- <img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
+ <img  width="80%" height="80%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
  </div>
 
 3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. Below, is an example Section from the US Code of Federal Regulations, showcasing a Section which contains direct references to other pieces of legislation within the CFR. 
+
 <div align="center">
-<img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-reference.png?raw=true">
+<img  width="70%" height="70%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-reference.png?raw=true">
 </div>
 
 The scraper file extracts and processes text into our unified schema, which allows for the direct connections between nodes in our graphs. This allows for incredibly powerful graph traversal.
+
 <div align="center">
-<img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-node_text-reference.png?raw=true">
+<img  width="70%" height="70%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-node_text-reference.png?raw=true">
  </div>
 
 4. **Large Language Model Readiness**: The structure and availability of data are optimized for use with Large Language Models, facilitating advanced computational legal studies and AI-driven applications. Embedding fields are pre-generated and available out of the box (Donations welcome) 
+
 <div align="center">
 <img width="30%" height="30%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
 </div>
+
 [Ask Abe](https://www.askabeai.com/), a legal education assistant developed in parallel with this project, showcases the capabilities of LLM applications built using open-source-legislation.
+
 <div align="center">
-<img width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/abe-example.png?raw=true">
+<img width="80%" height="80%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/abe-example.png?raw=true">
 </div>
+
 5. **Python SDK**: Utilize our Python SDK based on Pydantic to seamlessly interface with the legislation data. This SDK simplifies the process of data handling the unified schema, making it straightforward to implement robust data pipelines. Pydantic models provide instant data validation, helper functions for data transformation (node_text into JSON, XML, string), and allow for easy integration with the Instructor library for LLM prompting.
+
 <div align="center">
 <img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
 </div>
@@ -42,6 +50,8 @@ See more documentation in (TODO: Add link to documentation and write documentati
 7. **Customizable Scraping Tools**: All scraping and processing tools are open-source and fully customizable. Users are encouraged to modify, extend, or enhance these tools to suit their specific needs or to contribute back to the community.
 
 ## Supported Legislation
+Currently, I am working to overhaul previously created legislation scrapers to adhere to the newest version of our unified schema. Included with this schema conversion is an increased effort to improve metadata tagging and reference extraction. This will take some time and only a couple of corpuses of legislation are fully refactored, check back in a couple weeks as refactoring work continues (Looking for people to help, its a lot to do myself!). Although unsupported, most scrapers do work providing a barebones deprecated schema, scrape at your own risk.
+
 | Country | Jurisdiction | Corpus | | Status | Dev Comment | Last Updated | Source Code | Download |
 |---------|--------------|------------------|---|---------|-------------|--------------|-------------|----------|
 | mhl - Republic of the Marshall Islands | federal - Federal Jurisdiction | statutes - Statutes | 🟠 | Refactoring |  Major Overhaul WIP | 2024-07-18T15:59:24.920177 | [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/mhl/federal/statutes) | N/A |
@@ -94,28 +104,24 @@ Legislation status tracked in real time.
 
 
 ## Downloading Legislation Data 
+
+We aim to provide data downloads of primary source legislation for every supported jurisdiction and corpus. Currently, every supported corpus of legislation has a corresponding .sql file available for download. Running this SQL file will create that corpus's corresponding PostgresSQL file using individual insert statements. Below is an example .SQL file for Arizona Statutes.
+
 <div align="center">
 <img width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/sql-dump.png?raw=true">
 </div>
-We aim to provide data downloads of primary source legislation for every supported jurisdiction and corpus. Currently, every supported corpus of legislation has a corresponding .sql file available for download. Running this SQL file will create that corpus's corresponding PostgresSQL file using individual insert statements. Follow these steps to create a table for each corpus you want:
+
+**Note**: Corpuses with deprecated schema undergoing refactoring can still be accessed, requiring cloning the repository and running the scrapers manually.
 
 ### Find and Download the Corpus's .sql File
-Go to the "## Supported Legislation" table and click on the link of the requested corpus of legislation Download Link. This is a link to a hosted file storage system which will automatically initiate a download.
+Go to the "## Supported Legislation" table and click on the link of the requested corpus of legislation Download Link. This is a link to a hosted file storage system which will automatically initiate a download. Hosting legislation for free and public downloads can be financially demanding, consider supporting the project or joining the community!
 
 ### Run the SQL File
-There are different ways to run the SQL file. I recommend using psql.
+There are different ways to run the SQL file. I recommend using psql. Below are installation and usage instructions.
 
-#### Installing psql
-Windows
-Download and install PostgreSQL from the official website:
-https://www.postgresql.org/download/windows/
-During the installation process, make sure to check the box for installing psql.
-Once the installation is complete, open the Command Prompt and type psql --version to verify the installation.
-MacOS
-Install PostgreSQL using Homebrew:
-```sh
-brew install postgresql
-```
+#### Prerequesites
+1. Postgres is installed
+2. PSQL is usable
 
 #### Running the SQL File
 Open Terminal or Command Prompt
@@ -130,7 +136,7 @@ Execute the following command to run your .sql file and connect it to your local
 ```sh
 psql -U your_username -d your_database -f country_jurisdiction_corpus.sql
 ```
-Replace your_username with your PostgreSQL username, your_database with the name of your database, and your_file.sql with the name of your .sql file.
+Replace your_username with your PostgreSQL username, your_database with the name of your database, and country_jurisdiction_corpus.sql with the name of your .sql file.
 
 #### Example
 Assuming your username is myuser, your database name is mydatabase, and your file is named us_az_statutes.sql, the command would be:
@@ -143,18 +149,20 @@ This command will prompt you to enter your PostgreSQL password. After entering t
 By following these steps, you can successfully download and run the .sql files to create tables for each corpus you need in your PostgreSQL database.
 
 ## Running Scrapers Locally
-Besides downloading data, this repository contains all of the source code on all supported corpus of legislation and the Python based scrapers which scraep, process, and clean the data. You are free to modify, use, and update these programs as you see fit. If you'd prefer to run them yourselves, which would allow for more regular updates, go for it! You can run these scrapers yourself by following these steps.
+Besides downloading data, this repository contains all of the source code on all supported corpus of legislation and the Python based scrapers which scrape, process, and clean the data. You are free to modify, use, and update these programs as you see fit. If you'd prefer to run them yourselves, which would allow for more regular updates, go for it! You can run these scrapers yourself by following these steps.
+
+**Note**: Corpus with deprecated schema undergoing refactoring are only usable by manually running scrapers. We hope to finish refactoring soon, and offer bulk data downloads for all supported corpuses.
 
 ### Setup Instructions
 1. **Clone the Repository:**
    ```bash
-    git clone https://github.com/your-username/open-source-legislation.git
+    git clone https://github.com/spartypkp/open-source-legislation.git
     cd open-source-legislation
     ```
 
 2. **Create a Virtual Environment:**
    ```bash
-   python -m venv venv
+   python3 -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
 
@@ -196,7 +204,7 @@ Our dream is to curate a platform and community dedicated to providing primary s
 
 ## Contributing
 
-We welcome contributions from the community! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to the project, including how to add new jurisdictions.
+We welcome contributions from the community! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to the project, including how to add new countries, jurisdictions, and corpuses.
 
 ## Extra Documentation
 Mega WIP lol
