@@ -8,26 +8,32 @@ Welcome to open-source-legislation, a platform dedicated to democratizing access
 1. **Global Repository of Scraped Legislation**: Tap into our extensive database featuring detailed legislative content from countries and jurisdictions worldwide. The bottom line is we want to make this data easy to begin building with.
 
 2. **Download Processed SQL Legislation Data**: Primary source legislation is scraped and processed into SQL files with rich metadata tagging, making it easy to download and integrate directly into your databases. Download one or many different corpus of legislation from different countries and jurisdictions. 
+<div align="center">
+ <img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
+ </div>
 
- <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
+3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. Below, is an example Section from the US Code of Federal Regulations, showcasing a Section which contains direct references to other pieces of legislation within the CFR. 
+<div align="center">
+<img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-reference.png?raw=true">
+</div>
 
-3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. Below, is an example Section from the US Code of Federal Regulations, showcasing a Section which contains direct references to other pieces of legislation within the CFR.
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-reference.png?raw=true">
-
-Below, is the extracted and processed text in our schema, which allows for the direct connections between nodes in our graphs. This allows for incredibly powerful graph traversal. 
-
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-node_text_reference.png?raw=true">
+The scraper file extracts and processes text into our unified schema, which allows for the direct connections between nodes in our graphs. This allows for incredibly powerful graph traversal.
+<div align="center">
+<img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-node_text-reference.png?raw=true">
+ </div>
 
 4. **Large Language Model Readiness**: The structure and availability of data are optimized for use with Large Language Models, facilitating advanced computational legal studies and AI-driven applications. Embedding fields are pre-generated and available out of the box (Donations welcome) 
-
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
-
-Ask Abe [view](https://www.askabeai.com/), a legal education assistant developed in parallel with this project, showcases the capabilities of LLM applications built using open-source-legislation.
-
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/abe-example.png?raw=true">
-
+<div align="center">
+<img width="30%" height="30%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
+</div>
+[Ask Abe](https://www.askabeai.com/), a legal education assistant developed in parallel with this project, showcases the capabilities of LLM applications built using open-source-legislation.
+<div align="center">
+<img width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/abe-example.png?raw=true">
+</div>
 5. **Python SDK**: Utilize our Python SDK based on Pydantic to seamlessly interface with the legislation data. This SDK simplifies the process of data handling the unified schema, making it straightforward to implement robust data pipelines. Pydantic models provide instant data validation, helper functions for data transformation (node_text into JSON, XML, string), and allow for easy integration with the Instructor library for LLM prompting.
- <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+<div align="center">
+<img  width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+</div>
 
 See more documentation in (TODO: Add link to documentation and write documentation)
 
@@ -88,14 +94,13 @@ Legislation status tracked in real time.
 
 
 ## Downloading Legislation Data 
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/sql-dump.png?raw=true">
-
+<div align="center">
+<img width="50%" height="50%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/sql-dump.png?raw=true">
+</div>
 We aim to provide data downloads of primary source legislation for every supported jurisdiction and corpus. Currently, every supported corpus of legislation has a corresponding .sql file available for download. Running this SQL file will create that corpus's corresponding PostgresSQL file using individual insert statements. Follow these steps to create a table for each corpus you want:
 
 ### Find and Download the Corpus's .sql File
 Go to the "## Supported Legislation" table and click on the link of the requested corpus of legislation Download Link. This is a link to a hosted file storage system which will automatically initiate a download.
-
-
 
 ### Run the SQL File
 There are different ways to run the SQL file. I recommend using psql.
@@ -111,26 +116,9 @@ Install PostgreSQL using Homebrew:
 ```sh
 brew install postgresql
 ```
-After installation, you can start the PostgreSQL service:
-```sh
-brew services start postgresql
-```
-Verify the installation by typing psql --version in your terminal.
-Linux
-Install PostgreSQL using your package manager. For example, on Ubuntu:
-```sh
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-```
-Switch to the postgres user and start the PostgreSQL prompt:
-```sh
-sudo -i -u postgres
-psql
-```
-Verify the installation by typing psql --version.
+
 #### Running the SQL File
 Open Terminal or Command Prompt
-Open your terminal or command prompt.
 
 Navigate to the Directory Containing the .sql File
 Use the cd command to navigate to the directory where your .sql file is located.
@@ -191,7 +179,6 @@ To run an existing scraper for a specific jurisdiction (e.g., California statute
 
 ### Python SDK
 **TODO**
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
 
 ### Typescript SDK
 **TODO**
@@ -201,7 +188,6 @@ Populating knowledge graph
 
 ## Preparing Bulk Data for Usage with LLM
 More here
-
 
 ## Democratizing Legal Knowledge for All
 
