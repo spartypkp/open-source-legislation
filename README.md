@@ -5,12 +5,34 @@
 Welcome to open-source-legislation, a platform dedicated to democratizing access to global legislative data. This repository serves as a foundational tool for developers, legal professionals, and researchers to build applications using primary source legislation. Download legislation data in our standardized SQL format and immediate start building with our Python and Typescript (Coming Soon!) SDKs. We are striving to eliminate the incredible barriers to accessing primary source legislation data by building a comprehensive library of global legislation.
 
 # Features
-1. **Global Repository of Scraped Legislation**: Tap into our extensive database featuring detailed legislative content from countries and jurisdictions worldwide.
-2. **Download Processed SQL Legislation Data**: Primary source legislation is scraped and processed into SQL files with rich metadata tagging, making it easy to download and integrate directly into your databases. Download one or many different corpus of legislation from different countries and jurisdictions.  <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
-3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cross-corpus.png?raw=true">
-4. **Large Language Model Readiness**: The structure and availability of data are optimized for use with Large Language Models, facilitating advanced computational legal studies and AI-driven applications. Embedding fields are pre-generated and available out of the box (Donations welcome) <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
-5. **Python SDK**: Utilize our Python SDK based on Pydantic to seamlessly interface with the legislation data. This SDK simplifies the process of data handling the unified schema, making it straightforward to implement robust data pipelines. <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+1. **Global Repository of Scraped Legislation**: Tap into our extensive database featuring detailed legislative content from countries and jurisdictions worldwide. The bottom line is we want to make this data easy to begin building with.
+
+2. **Download Processed SQL Legislation Data**: Primary source legislation is scraped and processed into SQL files with rich metadata tagging, making it easy to download and integrate directly into your databases. Download one or many different corpus of legislation from different countries and jurisdictions. 
+
+ <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
+
+3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. Below, is an example Section from the US Code of Federal Regulations, showcasing a Section which contains direct references to other pieces of legislation within the CFR.
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-reference.png?raw=true">
+
+Below, is the extracted and processed text in our schema, which allows for the direct connections between nodes in our graphs. This allows for incredibly powerful graph traversal. 
+
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/cfr-node_text_reference.png?raw=true">
+
+4. **Large Language Model Readiness**: The structure and availability of data are optimized for use with Large Language Models, facilitating advanced computational legal studies and AI-driven applications. Embedding fields are pre-generated and available out of the box (Donations welcome) 
+
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
+
+Ask Abe [view](https://www.askabeai.com/), a legal education assistant developed in parallel with this project, showcases the capabilities of LLM applications built using open-source-legislation.
+
+<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/abe-example.png?raw=true">
+
+5. **Python SDK**: Utilize our Python SDK based on Pydantic to seamlessly interface with the legislation data. This SDK simplifies the process of data handling the unified schema, making it straightforward to implement robust data pipelines. Pydantic models provide instant data validation, helper functions for data transformation (node_text into JSON, XML, string), and allow for easy integration with the Instructor library for LLM prompting.
+ <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+
+See more documentation in (TODO: Add link to documentation and write documentation)
+
 6. **TypeScript SDK (Coming Soon)**: Anticipate the release of our TypeScript SDK, which will provide additional flexibility for developing client-side applications and services.
+
 7. **Customizable Scraping Tools**: All scraping and processing tools are open-source and fully customizable. Users are encouraged to modify, extend, or enhance these tools to suit their specific needs or to contribute back to the community.
 
 ## Supported Legislation
