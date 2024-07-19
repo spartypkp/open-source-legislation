@@ -2,14 +2,16 @@
 
 # Open Sourcing the World's Legislation
 
-Welcome to open-source-legislation, a project which aims to provide access to global primary source legislation for all. The heart of the project is a Python based platform of webscrapers, individually tailored for each jurisdiction and corpus of legislation. We provide the capability to run these scrapers yourself, and populate your own SQL database of cleaned and processed primary source legislation. 
+Welcome to open-source-legislation, a platform dedicated to democratizing access to global legislative data. This repository serves as a foundational tool for developers, legal professionals, and researchers to build applications using primary source legislation. Use legislation data in our standardized format with our Python and Typescript SDKs. We are striving to eliminate the incredible barriers to accessing primary source legislation data by building a comprehensive library of global legislation.
 
-
-<img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
-
-
-We propose a unified schema for representing legislation as a hierarchical graph of nodes which creates a rich knowledge graph for each jurisdiction, specifically designed for use with Large Language Models. Soon we will offer bulk data downloads for all primary source legislation, as well as Python and Typescript SDKs for immediate and easy usage.
-
+# Features
+1. **Global Repository of Scraped Legislation**: Tap into our extensive database featuring detailed legislative content from countries and jurisdictions worldwide.
+2. **Download Processed SQL Legislation Data**: Every piece of legislation is processed into SQL files, making it easy to download and integrate directly into your databases. These SQL downloads are structured in a consistent format, ensuring reliable integration and manipulation. <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/bulkdata.png?raw=true">
+3. **Unified Legislation Schema**: Legislation is modeled within a sophisticated SQL knowledge graph schema, designed to support complex queries and relational data exploration, enhancing both the depth and breadth of legislative analysis. Connections between nodes of legislation in the same corpus and different corpus are now possible, unlocking powerful cross-corpus and cross-jurisdiction connections. 
+4. **Large Language Model Readiness**: The structure and availability of data are optimized for use with Large Language Models, facilitating advanced computational legal studies and AI-driven applications. Embedding fields are pre-generated and available out of the box (Donations welcome) <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/embedding-fields.png?raw=true">
+5. **Python SDK**: Utilize our Python SDK based on Pydantic to seamlessly interface with the legislation data. This SDK simplifies the process of data handling the unified schema, making it straightforward to implement robust data pipelines. <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/pydantic-model.png?raw=true">
+6. **TypeScript SDK (Coming Soon)**: Anticipate the release of our TypeScript SDK, which will provide additional flexibility for developing client-side applications and services.
+7. **Customizable Scraping Tools**: All scraping and processing tools are open-source and fully customizable. Users are encouraged to modify, extend, or enhance these tools to suit their specific needs or to contribute back to the community.
 
 ## Supported Legislation
 | Country | Jurisdiction | Corpus | | Status | Dev Comment | Last Updated | Source Code | Download |
@@ -62,10 +64,6 @@ We propose a unified schema for representing legislation as a hierarchical graph
 
 Legislation status tracked in real time.
 
-
-## Democratizing Legal Knowledge for All
-
-Our dream is to curate a platform and community dedicated to providing primary source legislation data in a unified and accessible format. Building applications in the legal field is difficult considering the incredible barriers to accessing legislation data in a standardized format for use with code. A legal engineer wanting to build an application which relies on primary source legislation would first need to spend considerable time and effort sourcing this legislative data before they could even begin to build. We want to remove these barriers, and provide instant and easy access so that our community can just start building. We believe legal data and law itself is a public good, and should be readily and easily accessible for all.
 
 ## Downloading Legislation Data 
 <img width="100%" height="100%" src="https://github.com/spartypkp/open-source-legislation/blob/main/public/sql-dump.png?raw=true">
@@ -181,6 +179,11 @@ Populating knowledge graph
 
 ## Preparing Bulk Data for Usage with LLM
 More here
+
+
+## Democratizing Legal Knowledge for All
+
+Our dream is to curate a platform and community dedicated to providing primary source legislation data in a unified and accessible format. Building applications in the legal field is difficult considering the incredible barriers to accessing legislation data in a standardized format for use with code. A legal engineer wanting to build an application which relies on primary source legislation would first need to spend considerable time and effort sourcing this legislative data before they could even begin to build. We want to remove these barriers, and provide instant and easy access so that our community can just start building. We believe legal data and law itself is a public good, and should be readily and easily accessible for all.
 
 
 ## Contributing
