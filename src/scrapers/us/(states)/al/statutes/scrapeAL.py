@@ -12,8 +12,25 @@ from typing import List, Tuple
 import time
 from bs4.element import Tag
 
+from pathlib import Path
+import sys
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+    
 from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
 from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 from selenium.webdriver.remote.webelement import WebElement
@@ -27,7 +44,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://alison.legislature.state.al.us"
 TOC_URL = "https://alison.legislature.state.al.us/code-of-alabama"
-SKIP_TITLE = 11
+SKIP_TITLE = 9
 RESERVED_KEYWORDS = [" RESERVED."]
 # === Jurisdiction Specific Global Variables ===
 # Selenium Driver
@@ -42,7 +59,9 @@ def main():
     DRIVER.get(TOC_URL)
     DRIVER.implicitly_wait(5)
 
+    # Find table of content item
     toc_content = DRIVER.find_element(By.ID, "simple-tabpanel-0")
+    
     all_titles = toc_content.find_elements(By.CLASS_NAME, "code-item")
 
     for i, current_element in enumerate(all_titles):
