@@ -67,11 +67,11 @@ def scrape(corpus_node: Node):
 
     # This is beyond messy. California likes to move the ordering of their levels around based on the different code. This is a way to track those. This took 30+ hours of research. And it's messy, I'm sorry.
 
-    DIVISION_CASE = ["DIVISION", "PART", "TITLE", "CHAPTER", "ARTICLE"]
-    PART_CASE = ["PART", "TITLE", "DIVISION", "CHAPTER", "ARTICLE"]
-    TITLE_CASE = ["TITLE", "DIVISION", "PART", "CHAPTER", "ARTICLE"]
-    SHORT_CASE = ["DIVISION", "CHAPTER", "ARTICLE"]
-    REGULAR_CASE = ["DIVISION", "PART", "CHAPTER", "ARTICLE"]
+    DIVISION_CASE = ["division", "part", "title", "chapter", "article"]
+    PART_CASE = ["part", "title", "division", "chapter", "article"]
+    TITLE_CASE = ["title", "division", "part", "chapter", "article"]
+    SHORT_CASE = ["division", "chapter", "article"]
+    REGULAR_CASE = ["division", "part", "chapter", "article"]
     BASE = ["ca", "statutes", "code"]
 
     DIVISION_CODE = ["WAT", "CIV"]
@@ -112,7 +112,10 @@ def scrape(corpus_node: Node):
         scrape_structure_nodes(url, title_schema, code_node, code)
         
 # For every root node, scrape all structure nodes, getting a list of all valid HTML div elements which have content node children
-def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node, top_level_title: str):
+def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node):
+    """
+    For every top_level_title node (level_classifier=code), scrape all structure nodes, getting a list of all valid HTML div elements.
+    """
     soup = get_url_as_soup(url=url)
     
     # Find the HTML container for actual content
@@ -145,6 +148,9 @@ def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node,
 
 
 def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
+    """
+    For every code, process a list of HTML divs corresponding to structure nodes. Using title_schema, find each nodes correct parent, and add each node. If a div indicates a link to find children which are content_nodes, scrape those content nodes
+    """
     current_node = node_parent
     # Find the container
     
@@ -154,31 +160,26 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
 
         # Check node is not reserved
         if new_partial_node.status:
-            new_partial_node.node_id += f"/{new_partial_node.level_classifier}={new_partial_node.number}"
+            
+            new_partial_node.id = new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.number)
+            print(f"Node status is none: {new_partial_node.node_id}")
             new_partial_node.parent = current_node.node_id
 
             insert_node(new_partial_node, TABLE_NAME, debug_mode=True)
             return
 
-        # Check if node level classifier is in title schema
-        if (new_partial_node.level_classifier not in title_schema):
-            
-            index = title_schema.index(current_node.id.current_level[0]) + 1
-            # Couldn't find the new level_classifier in the title_schema
-            if(index == len(title_schema)):
-                # Indicates a section by the link attribute _displayText
-                if ("codes_displayText" in new_partial_node.node_link):
-                    new_partial_node.level_classifier = "section"
-                else:
-                    # Allow for 'subtitle', 'subchapter', 'subpart' etc...
-                    new_partial_node.level_classifier = "sub" + current_node.level_classifier
-            else:
-                new_partial_node.level_classifier = title_schema[index]
-            
-        if (new_partial_node.level_classifier in title_schema):
-            # Actually build node
-            # POSSIBLY ADD
+        # Not a valid level for this code
+        if (new_partial_node.level_classifier.upper() not in title_schema):
+            print(f"Not a valid level for this code: {new_partial_node.level_classifier}")
+            # Assume node_parent is correct parent
+            new_partial_node.id = new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.number)
+            new_partial_node.parent = current_node.node_id
 
+            insert_node(new_partial_node, TABLE_NAME, debug_mode=True)
+        
+        # Is a valid level or SUB variation of valid level
+        if (new_partial_node.level_classifier.upper() in title_schema):
+            # Find the rank of the current and new node's level classifiers in title_schema
             currentRank = title_schema.index(current_node.level_classifier)
             newRank = title_schema.index(new_partial_node.level_classifier)
 
@@ -186,6 +187,7 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
             if (newRank <= currentRank):
                 temp_node_id = current_node.id
 
+                # Find the correct parent of the new node
                 while (title_schema.index(temp_node_id.current_level[0]) > newRank):
                     temp_node_id = temp_node_id.pop_level()
                     if (temp_node_id.current_level[0] == 'code'):
@@ -196,44 +198,25 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
                 currentRank = title_schema.index(current_node.current_level[0])
                 # Set the ID of the newNode and add it to the current_node's children or siblings
                 if (newRank == currentRank):
-                
-
-                    new_partial_node.id = f"{current_node.pop_level().raw_id}/{new_partial_node.level_classifier}={new_partial_node.number}"
-                    
-                    
+                    new_partial_node.id = NodeID(raw_id=f"{current_node.pop_level().raw_id}/{new_partial_node.level_classifier}={new_partial_node.number}")
                     new_partial_node.parent = current_node.pop_level().raw_id
-                    
                     current_node = new_partial_node
                 else:
-                    new_partial_node.id = f"{temp_node_id}/{new_partial_node.level_classifier}={new_partial_node.number}"
-                    
-                    
+                    new_partial_node.id = NodeID(raw_id=f"{temp_node_id}/{new_partial_node.level_classifier}={new_partial_node.number}")
                     new_partial_node.parent = current_node.raw_id
                     current_node = new_partial_node
                 
             else:
                 # Set the ID of the newNode and add it to the current_node's children
-                new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.number)
+                new_partial_node.id = new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.number)
                 new_partial_node.parent = current_node.node_id
                 current_node = new_partial_node
             
-
-            # Print the current_node and scrape content if necessary
-            current_node.node_id = current_node.node_id.replace("./", "/")
-            print(current_node)
             insert_node(current_node, TABLE_NAME, debug_mode=True)
-            
-            #print(current_node)
-            if ("codes_displayText" in  new_partial_node.link):
-                scrape_content_node(new_partial_node)
-        elif ("codes_displayText" in  new_partial_node.link):
-                
-                #print(f"Scraping all content for {new_partial_node.node_id}")
-                new_partial_node.node_id += new_partial_node.level_classifier + "=" + new_partial_node.number
-                new_partial_node.parent = current_node.node_id
-    
-                insert_node(new_partial_node, TABLE_NAME, debug_mode=True)
-                scrape_content_node(new_partial_node)
+        
+        # New structure contains content node children, denoted by link value
+        if ("codes_displayText" in str(new_partial_node.link)):
+            scrape_content_node(new_partial_node)
         
             
     
@@ -265,8 +248,6 @@ def get_structure_node_attributes(current_element, node_parent: Node) -> Node:
     if (not node_name):
         print("No first child element with text found in the 'a' tag.")
         exit(1)
-
-    print(node_name)
     
     # Check that the current node is not reserved, tag in status if it is
     status=None
@@ -294,7 +275,7 @@ def get_structure_node_attributes(current_element, node_parent: Node) -> Node:
         
     # Create a temporary node_id. This will be changed when the correct parent is found
     node_id = f"{node_parent.node_id}"
-    citation = f"Cal. {node_parent.top_level_title} {level_classifier} {number}"
+    citation = f"Cal. {node_parent.top_level_title.upper()} {level_classifier.capitalize()} {number}"
     
     partial_node_data = Node(
         id=node_id, 
@@ -308,7 +289,7 @@ def get_structure_node_attributes(current_element, node_parent: Node) -> Node:
         status=status,
         node_name=node_name
     )
-    print(partial_node_data)
+    
     return partial_node_data
     
     
@@ -359,9 +340,7 @@ def scrape_content_node(node_parent: Node):
             node_text = NodeText()
         except:
             continue
-        
-        
-        print(f"{node_name},",end="")
+    
         
         for i, p_tag in enumerate(div.find_all(recursive=True)):
             if i <= 1 or p_tag.name == "i":
@@ -370,12 +349,10 @@ def scrape_content_node(node_parent: Node):
             text_to_add = p_tag.get_text().strip()
             if(text_to_add == ""):
                 continue
-            #if len(node_text)==0:
-                #text_to_add = node_name + " " + text_to_add
             
             node_text.add_paragraph(text=text_to_add)
 
-        node_addendum_text = node_text.pop()
+        node_addendum_text = node_text.pop().text
         addendum = Addendum(history=AddendumType(text=node_addendum_text))
         section_node = Node(
             id=node_id, 
@@ -391,7 +368,7 @@ def scrape_content_node(node_parent: Node):
             parent=node_parent.node_id
         )
 
-        insert_node(section_node, TABLE_NAME, False, True)
+        insert_node(section_node, TABLE_NAME, debug_mode=True)
                 
     return
 

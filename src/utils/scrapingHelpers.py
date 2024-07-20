@@ -13,6 +13,16 @@ import requests
 from requests.exceptions import HTTPError, ConnectionError
 import time
 
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from typing import List, Tuple
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver
+
 
 def insert_jurisdiction_and_corpus_node(country_code: str, jurisdiction_code: str, corpus_code: str) -> Node:
     """
@@ -133,4 +143,32 @@ def get_url_as_soup(url: str, delay_time: Optional[int] = None) -> BeautifulSoup
     except Exception as e:
         print(f"An error occurred!")
         raise e
+
+
+def selenium_elements_present(parent: WebElement, locator, min_elements: int):
+    """
+    Custom Expected Condition that checks if elements are present within a parent element. Returns false if number of returned elements is less than min_elements.
+    """
+    def predicate(driver):
+        # Check if a disallowed element locator is present, if so return empty
         
+        elements = parent.find_elements(*locator)
+
+        if len(elements) < min_elements:
+            return False
+        
+        
+        return elements if elements else False
+
+    return predicate
+
+def selenium_element_present(parent: WebElement, locator):
+    """
+    Custom Expected Condition that checks if an element is present within a parent element.
+    """
+    def predicate(driver):
+        # Attempt to find the elements within the parent and check if they're present
+        element = parent.find_element(*locator)
+        return element if element else False
+
+    return predicate

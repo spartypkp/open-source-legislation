@@ -262,6 +262,24 @@ class NodeText(BaseModel):
         self.paragraphs[paragraph_id] = paragraph
         return paragraph_id
     
+    def pop(self) -> Paragraph:
+        """
+        Pop the last Paragraph by Index
+        """
+        highest_index = -1
+        highest_paragraph_id=""
+        # This is dumb and I should find a better way to do this
+        for paragraph_id,paragraph in self.paragraphs.items():
+            if paragraph.index > highest_index:
+                highest_index = paragraph.index
+                highest_paragraph_id = paragraph_id
+
+        popped_paragraph = self.paragraphs[highest_paragraph_id]
+        del self.paragraphs[highest_paragraph_id]
+
+        return popped_paragraph
+
+    
     def to_list_paragraph(self) -> List[Paragraph]:
         """
         Return NodeText as a List of Paragraph Pydantic Models
