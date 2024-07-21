@@ -20,7 +20,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ak/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
@@ -31,12 +31,12 @@
         "Jurisdiction": "al",
         "Jurisdiction_description": "Alabama",
         "Corpus": "statutes",
-        "Corpus_description": "Statutes",
+        "Corpus_description": "Code of Alabama",
         "FilePath": "src/scrapers/us/(states)/al/statutes",
-        "Status": "Refactoring",
-        "DevComment": "Major Overhaul WIP",
+        "Status": "Complete",
+        "DevComment": "Done!",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/al/statutes/us_al_statutes.sql)"
     },
     {
         "Country": "us",
@@ -46,10 +46,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/az/statutes",
-        "Status": "Testing",
-        "DevComment": "Major Overhaul WIP",
+        "Status": "Complete",
+        "DevComment": "N/A",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "[view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/az/statutes/us_az_statutes.sql)"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/az/statutes/us_az_statutes.sql)"
     },
     {
         "Country": "us",
@@ -59,10 +59,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Code",
         "FilePath": "src/scrapers/us/(states)/ca/statutes",
-        "Status": "Refactoring",
-        "DevComment": "Major Overhaul WIP",
+        "Status": "Complete",
+        "DevComment": "Refactor almost done",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/ca/statutes/us_ca_statutes.sql)"
     },
     {
         "Country": "us",
@@ -72,7 +72,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/co/statutes",
-        "Status": "Refactoring",
+        "Status": "In Progress",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"

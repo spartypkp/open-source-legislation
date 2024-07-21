@@ -4,7 +4,7 @@ from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_excep
 
 from urllib.error import URLError
 from src.utils import utilityFunctions as util
-from src.utils.pydanticModels import Node
+from src.utils.pydanticModels import Node, NodeID
 from bs4 import BeautifulSoup
 
 from typing import Optional
@@ -84,8 +84,18 @@ def insert_node(node: Node, table_name: str, ignore_duplicate=False, debug_mode=
         except psycopg.errors.UniqueViolation as e:
             if not ignore_duplicate:
                 new_node_id = node.node_id
-                # Remove any old version numbers
-                v_index = new_node_id.find("-v_")
+                try:
+                    # Remove any old version numbers
+                    v_index = new_node_id.index("-v_")
+                except:
+                    v_index = len(new_node_id)
+
+                    # Tag this node's original in the duplicate's core_metadata
+                    if node.core_metadata:
+                        node.core_metadata["duplicated_from_node_id"] = node.node_id
+                    else:
+                        node.core_metadata = {"duplicated_from_node_id": node.node_id}
+
                 new_node_id = new_node_id[0:v_index]
                 # Add new version number, starting with 2
                 new_node_id += f"-v_{i}"
@@ -93,6 +103,7 @@ def insert_node(node: Node, table_name: str, ignore_duplicate=False, debug_mode=
                 if debug_mode:
                     print(f"Adding duplicate version number for: {new_node_id}")
                 # Try to insert again
+                node.id = NodeID(raw_id=new_node_id)
                 continue
 
             else:
@@ -145,7 +156,7 @@ def get_url_as_soup(url: str, delay_time: Optional[int] = None) -> BeautifulSoup
         raise e
 
 
-def selenium_elements_present(parent: WebElement, locator, min_elements: int):
+def selenium_elements_present(parent: WebElement, locator, min_elements: int = 1):
     """
     Custom Expected Condition that checks if elements are present within a parent element. Returns false if number of returned elements is less than min_elements.
     """

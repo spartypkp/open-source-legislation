@@ -32,7 +32,7 @@
             "description": "Alaska",
             "statutes": {
                 "download_link_available": false,
-                "status": "Refactoring",
+                "status": "Testing",
                 "status_description": "Major Overhaul WIP",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Statutes",
@@ -42,11 +42,11 @@
         "al": {
             "description": "Alabama",
             "statutes": {
-                "download_link_available": false,
-                "status": "Refactoring",
-                "status_description": "Major Overhaul WIP",
+                "download_link_available": true,
+                "status": "Complete",
+                "status_description": "Done!",
                 "last_updated": "2024-07-18T14:53:05.618081",
-                "description": "Statutes",
+                "description": "Code of Alabama",
                 "file_path": "src/scrapers/us/(states)/al/statutes"
             }
         },
@@ -54,8 +54,8 @@
             "description": "Arkansas",
             "statutes": {
                 "download_link_available": false,
-                "status": "Refactoring",
-                "status_description": "Major Overhaul WIP",
+                "status": "Not Started",
+                "status_description": "N/A",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Statutes"
             }
@@ -64,8 +64,8 @@
             "description": "Arizona",
             "statutes": {
                 "download_link_available": true,
-                "status": "Testing",
-                "status_description": "Major Overhaul WIP",
+                "status": "Complete",
+                "status_description": "N/A",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Statutes",
                 "file_path": "src/scrapers/us/(states)/az/statutes"
@@ -74,9 +74,9 @@
         "ca": {
             "description": "California",
             "statutes": {
-                "download_link_available": false,
-                "status": "Refactoring",
-                "status_description": "Major Overhaul WIP",
+                "download_link_available": true,
+                "status": "Complete",
+                "status_description": "Refactor almost done",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Code",
                 "file_path": "src/scrapers/us/(states)/ca/statutes"
@@ -86,7 +86,7 @@
             "description": "Colorado",
             "statutes": {
                 "download_link_available": false,
-                "status": "Refactoring",
+                "status": "In Progress",
                 "status_description": "Major Overhaul WIP",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Statutes",

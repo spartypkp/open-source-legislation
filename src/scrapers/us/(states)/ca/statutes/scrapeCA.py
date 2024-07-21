@@ -109,7 +109,7 @@ def scrape(corpus_node: Node):
             level_classifier="code"
         )
         insert_node(code_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
-        scrape_structure_nodes(url, title_schema, code_node, code)
+        scrape_structure_nodes(url, title_schema, code_node)
         
 # For every root node, scrape all structure nodes, getting a list of all valid HTML div elements which have content node children
 def scrape_structure_nodes(url: str, title_schema: List[str], node_parent: Node):
@@ -169,7 +169,7 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
             return
 
         # Not a valid level for this code
-        if (new_partial_node.level_classifier.upper() not in title_schema):
+        if (new_partial_node.level_classifier not in title_schema):
             print(f"Not a valid level for this code: {new_partial_node.level_classifier}")
             # Assume node_parent is correct parent
             new_partial_node.id = new_partial_node.id.add_level(new_partial_node.level_classifier, new_partial_node.number)
@@ -178,7 +178,7 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
             insert_node(new_partial_node, TABLE_NAME, debug_mode=True)
         
         # Is a valid level or SUB variation of valid level
-        if (new_partial_node.level_classifier.upper() in title_schema):
+        if (new_partial_node.level_classifier  in title_schema):
             # Find the rank of the current and new node's level classifiers in title_schema
             currentRank = title_schema.index(current_node.level_classifier)
             newRank = title_schema.index(new_partial_node.level_classifier)
@@ -202,7 +202,7 @@ def scrape_per_code(structure_divs, title_schema: List[str], node_parent: Node):
                     new_partial_node.parent = current_node.pop_level().raw_id
                     current_node = new_partial_node
                 else:
-                    new_partial_node.id = NodeID(raw_id=f"{temp_node_id}/{new_partial_node.level_classifier}={new_partial_node.number}")
+                    new_partial_node.id = temp_node_id.add_level(new_partial_node.level_classifier, new_partial_node.number)
                     new_partial_node.parent = current_node.raw_id
                     current_node = new_partial_node
                 
@@ -331,15 +331,30 @@ def scrape_content_node(node_parent: Node):
         try:
             section_container = div.find("a")
             number = section_container.get_text().strip()
-            citation = f"Cal. {node_parent.top_level_title} § {number}"
+
+            link = f"https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode={node_parent.top_level_title.upper()}&sectionNum={number}"
+
+            if number[-1] == ".":
+                number = number[:-1]
+
+            
+
+            citation = f"Cal. {node_parent.top_level_title.upper()} § {number}"
             level_classifier = "section"
             node_id = f"{node_parent.node_id}/{level_classifier}={number}"
-            link = f"https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode={node_parent.top_level_title}&sectionNum={number}"
+            
+
+           
+
             node_name = "Section " + number
             node_type = "content"
             node_text = NodeText()
         except:
             continue
+
+        # -Inserting: us/ca/statutes/code=bpc/division=3/chapter=4/article=8/section=6140.55
+#-Inserting: us/ca/statutes/code=bpc/division=3/chapter=4/article=8/section=6140.55
+#Adding duplicate version number for: us/ca/statutes/code=bpc/division=3/chapter=4/article=8/section=6140.5-v_2
     
         
         for i, p_tag in enumerate(div.find_all(recursive=True)):

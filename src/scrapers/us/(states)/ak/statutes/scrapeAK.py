@@ -8,13 +8,37 @@ from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+
+from typing import List, Tuple
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 import time
 from bs4.element import Tag
-
+import sys
+from pathlib import Path
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
 from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
-from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, selenium_element_present, selenium_elements_present
 
 
 
@@ -58,11 +82,13 @@ def scrape_all_titles(corpus_node: Node):
     
     
     for i in range(SKIP_TITLE, 47):
-        time.sleep(2)
-        titles_container = DRIVER.find_element(By.ID, "TitleToc")
-        all_titles = titles_container.find_elements(By.TAG_NAME, "li")
+        titles_container = WebDriverWait(DRIVER, 20).until(selenium_element_present(DRIVER, (By.ID, "TitleToc")))
+        all_titles = WebDriverWait(DRIVER, 20).until(selenium_elements_present(titles_container, (By.TAG_NAME, "li")))
+
         title_container = all_titles[i]
+
         title_a_tag = title_container.find_element(By.TAG_NAME, "a")
+
         title_name = title_a_tag.text.strip()
         top_level_title = title_name.split(" ")[1]
         if top_level_title[-1] == ".":
@@ -90,21 +116,20 @@ def scrape_all_titles(corpus_node: Node):
             link=link,
             parent=corpus_node.node_id
         )
-        print(f"-Inserting: {title_node_id}")
-        inserted_node = insert_node(node=title_node, table_name=TABLE_NAME, ignore_duplicate=True)
+        
+        insert_node(node=title_node, table_name=TABLE_NAME, ignore_duplicate=True, debug_mode=True)
 
-        # Find the parent element of the title container, using By.XPATh
-        title_container.click()
+        print(title_a_tag.text)  
+        time.sleep(20)
         title_a_tag.click()
-        time.sleep(0.5)
         
 
-        scrape_all_chapters(top_level_title, title_node)
+        scrape_all_chapters(title_node)
         title_return = DRIVER.find_element(By.ID, "titleLink")
         title_return.click()
-        time.sleep(0.5)
+        
 
-def scrape_all_chapters(top_level_title: str, node_parent: Node):
+def scrape_all_chapters(node_parent: Node):
     global DRIVER
     
     chapters_container = DRIVER.find_element(By.ID, "ChapterToc")
@@ -137,15 +162,14 @@ def scrape_all_chapters(top_level_title: str, node_parent: Node):
 
         status=None
         for word in RESERVED_KEYWORDS:
-            if word in chapter_name:
-                
+            if word in chapter_name:      
                 status = "reserved"
                 break
 
         node_id = f"{node_parent.node_id}/{level_classifier}={chapter_number}"
         chapter_node = Node(
             id=node_id,
-            top_level_title=top_level_title,
+            top_level_title=node_parent.top_level_title,
             node_type=node_type,
             number=chapter_number,
             node_name=chapter_name,
@@ -156,27 +180,20 @@ def scrape_all_chapters(top_level_title: str, node_parent: Node):
             status=status
         )
         
-
-         ## INSERT STRUCTURE NODE, if it's already there, skip it
-        try:
-            insert_node(node=chapter_node, table_name=TABLE_NAME)
-            print(f"-Inserting: {node_id}")
-        except:
-            print("** Skipping:",node_id)
-            continue
+        insert_node(node=chapter_node, table_name=TABLE_NAME, debug_mode=True)
+            
         
         # If chapter is not reserved
         if not status:
-            chapter_container.click()
             chapter_a_tag.click()
-            time.sleep(1)
-            scrape_all_sections(top_level_title, chapter_node)
+            
+            scrape_all_sections(chapter_node)
             chapter_return = DRIVER.find_element(By.ID, "partHead").find_element(By.TAG_NAME, "a")
             chapter_return.click()
 
-        time.sleep(1)
         
-def scrape_all_sections(top_level_title: str, node_parent: Node):
+        
+def scrape_all_sections( node_parent: Node):
     
     sections_container = DRIVER.find_element(By.ID, "ChapterToc")
     
@@ -193,7 +210,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
         section_container = BeautifulSoup(section_container_raw.get_attribute("outerHTML"), features="html.parser")
 
         node_name = section_container.get_text().strip()
-        print(f"Name={node_name}")
+        
         
         if "No Sections" in node_name:
             return
@@ -231,28 +248,13 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
             
             section_driver = webdriver.Chrome()
             section_driver.get(link)
-            section_driver.implicitly_wait(1)
-            time.sleep(1)
-            section_driver.find_element(By.ID, "content")
-
             
-            # I'm not sure why I made this arbitrarirly 100 long.
-            for i in range(0, 100):
-                time.sleep(.25)
-                try:
-                    addendum_container_raw = section_driver.find_element(By.ID, "sideSection")
-                    addendum_container = addendum_container_raw.find_element(By.TAG_NAME, "div")
+            content = section_driver.find_element(By.ID, "content")
+
+            addendum_container_raw = WebDriverWait(DRIVER, 20).until(selenium_element_present(content, (By.ID, "sideSection")))      
+            addendum_container = addendum_container_raw.find_element(By.TAG_NAME, "div")
                     
-                    break
-                except:
-                    print(i*.25)
-                    addendum_container = None
-            
-
-            
-            
             section_soup = BeautifulSoup(section_driver.page_source, features="html.parser").body
-            
             
             all_text_container = section_soup.find(id="content")
             
@@ -268,6 +270,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                     article_container = tag.find("h7")
                     article_name = article_container.get_text().strip()
                     article_number = article_name.split(" ")[1]
+
                     if article_number[-1] == ".":
                         article_number = article_number[:-1]
                     article_node_type = "structure"
@@ -277,7 +280,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                     article_node_id = f"{node_parent.node_id}/{article_node_level_classifier}={article_number}"
                     article_node = Node(
                         id=article_node_id,
-                        top_level_title=top_level_title,
+                        top_level_title=node_parent.top_level_title,
                         number=article_number,
                         node_type=article_node_type,
                         node_name=article_name,
@@ -288,8 +291,7 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                         status=status
                     )
 
-                    ## INSERT STRUCTURE NODE, if it's already there, skip it
-                    insert_node(article_node, table_name=TABLE_NAME, ignore_duplicate=True)
+                    insert_node(article_node, table_name=TABLE_NAME, debug_mode=True)
                     
                     found_article = True
                     break
@@ -356,12 +358,9 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
                             href = element["href"]
                             tag_link = "https://www.akleg.gov/basis/" + href
                             
-                            
-
                             if category not in core_metadata:
                                 core_metadata[category] = []
-                            
-
+                        
                             core_metadata[category].append({"citation": txt, "link": tag_link})
                             
                     else:
@@ -377,7 +376,6 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
 
                         core_metadata[category][-1]['text'] = txt   
 
-            
         if found_article:
             section_node_id = f"{article_node_id}/{level_classifier}={number}"
             parent=article_node_id
@@ -390,11 +388,9 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
         if core_metadata == {}:
             core_metadata=None
         
-        
-
         section_node = Node(
             id=section_node_id, 
-            top_level_title=top_level_title, 
+            top_level_title=node_parent.top_level_title, 
             node_type=node_type, 
             number=number, 
             node_name=node_name, 
@@ -406,8 +402,8 @@ def scrape_all_sections(top_level_title: str, node_parent: Node):
             parent=parent, 
             core_metadata=core_metadata
         )
-        print(f"-Inserting: {section_node_id}")
-        insert_node(section_node, TABLE_NAME)
+        
+        insert_node(section_node, TABLE_NAME, debug_mode=True)
         
 
 if __name__ == "__main__":

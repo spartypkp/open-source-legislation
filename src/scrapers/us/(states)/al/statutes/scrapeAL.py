@@ -46,7 +46,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://alison.legislature.state.al.us"
 TOC_URL = "https://alison.legislature.state.al.us/code-of-alabama"
-SKIP_TITLE = 0
+SKIP_TITLE = 21
 RESERVED_KEYWORDS = [" RESERVED."]
 # === Jurisdiction Specific Global Variables ===
 # Selenium Driver
@@ -71,6 +71,8 @@ def main():
         if i < SKIP_TITLE:
             continue
         recursive_scrape(corpus_node, current_element)
+        # To reduce loading times, close unused elements
+        current_element.click()
 
 def recursive_scrape(node_parent: Node, current_element: WebElement):
     """
@@ -83,15 +85,24 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
     
 
     tag_text = current_element.text
+    
     level_classifier = tag_text.split(" ")[0].lower()
     number = tag_text.split(" ")[1]
     node_name = tag_text
+    core_metadata = None
 
-    # Handle cases where unlabeled SUB levels occur
-    unlabeled_sublevel = False
+    # Very Weird Placeholder Level Classifier, found directly under  us/al/statutes/title=21/chapter=1/article=1/section=21-1-1
+    ## Deciding to ignore
+    if level_classifier == "placeholder":
+        return
+
+    # Handle cases where unlabeled SUB levels occur - allow unlabeled 'subsections'
     if level_classifier == node_parent.level_classifier:
-        level_classifier = "sub"+level_classifier
-        unlabeled_sublevel=True
+        if level_classifier == "section":
+            core_metadata = {"mislabeled": "subsection"}
+        else:
+            level_classifier = "sub"+level_classifier
+        
 
 
     if level_classifier == "title":
@@ -110,20 +121,23 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
         if word in node_name:
             status="reserved"
             break
-
-    
    
-    if level_classifier == "section" and not unlabeled_sublevel:
+    if level_classifier == "section":
         # Theres a really weird case where "sections" are used as structure nodes
         # See us/al/statutes/title=12/chapter=21/article=2/division=2 on the official site for an example
-        
-        citation = f"Al. Stat. § {number}"
-        # Get the separate section for text
-        text_element = WebDriverWait(DRIVER, 20).until(selenium_element_present(parent_element, (By.CLASS_NAME, "html-content")))
-        # Don't get node_text and addendum for reserved sections, it's werid stuff
-        if not status:
-            node_text, addendum = parse_text_element(text_element)
-        node_type = "content"
+        try:
+            citation = f"Al. Stat. § {number}"
+            # Get the separate section for text
+            text_element = WebDriverWait(DRIVER, 20).until(selenium_element_present(parent_element, (By.CLASS_NAME, "html-content")))
+            # Don't get node_text and addendum for reserved sections, it's werid stuff
+            if not status:
+                node_text, addendum = parse_text_element(text_element)
+            node_type = "content"
+        # Handle Sections which have unlabeled subsections
+        except:
+            node_type = "structure"
+            citation= f"Al. Stat. § Title {top_level_title} {level_classifier} {number}"
+
        
 
     else:
@@ -141,7 +155,8 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
         level_classifier=level_classifier,
         parent=node_parent.node_id,
         node_text=node_text,
-        addendum=addendum
+        addendum=addendum,
+        core_metadata=core_metadata
     )
     # No need for further recursion, found content node
     if node_type == "content":
@@ -150,7 +165,7 @@ def recursive_scrape(node_parent: Node, current_element: WebElement):
     # parent_element is a Selenium WebElement
     # Find the next recursive element
     try:
-        child_elements = WebDriverWait(DRIVER, 2).until(selenium_elements_present(parent_element, (By.CLASS_NAME, "code-item"), 2))
+        child_elements = WebDriverWait(DRIVER, 20).until(selenium_elements_present(parent_element, (By.CLASS_NAME, "code-item"), 2))
     except:
         # No child elements exist for structure node, must be reserved
         child_elements = []

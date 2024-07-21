@@ -71,7 +71,7 @@ def generate_json_from_structure(base_path):
 
 
                 if json_metadata[country][jurisdiction][corpus]["download_link_available"]:
-                    download_link = f"[view](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/{country}/{jurisdiction}/{corpus}/{country}_{jurisdiction}_{corpus}.sql)"
+                    download_link = f"[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/{country}/{jurisdiction}/{corpus}/{country}_{jurisdiction}_{corpus}.sql)"
                 else:
                     download_link = "N/A"
 
@@ -117,8 +117,8 @@ def generate_markdown_table(json_filepath):
         # Markdown table header
         
 
-        header = "| Country | Jurisdiction | Corpus | | Status | Dev Comment | Last Updated | Source Code | Download |\n"
-        divider = "|---------|--------------|------------------|---|---------|-------------|--------------|-------------|----------|\n"
+        header = "| Country | Jurisdiction | Corpus | | Status   |  Download | Source Code |\n"
+        divider = "|-------------|--------------|------------------|---|-------------|--------------|-------------|\n"
 
         # Start the markdown output with the header and divider
         markdown_output = header + divider
@@ -127,7 +127,7 @@ def generate_markdown_table(json_filepath):
         for entry in data:
             country = f"{entry['Country']} - {entry['Country_description']}"
             jurisdiction = f"{entry['Jurisdiction']} - {entry['Jurisdiction_description']}"
-            corpus = f"{entry['Corpus']} - {entry['Corpus_description']}"
+            corpus = f"{entry['Corpus_description']}"
             status = entry['Status']
             dev_comment = entry['DevComment']
             last_updated = entry['LastUpdated']
@@ -154,7 +154,7 @@ def generate_markdown_table(json_filepath):
             
 
             # Append each row to the markdown output
-            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {status_emoji} | {status} |  {dev_comment} | {last_updated} | {clickable_path} | {download_link} |\n"
+            markdown_output += f"| {country} | {jurisdiction} | {corpus} | {status_emoji} | {status} | {download_link} |  {clickable_path} |\n"
 
         # Write the complete markdown table to a file
         with open("src/github/status_table.md", "w") as write_file:
