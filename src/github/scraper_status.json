@@ -60,7 +60,7 @@
         "Corpus_description": "Code",
         "FilePath": "src/scrapers/us/(states)/ca/statutes",
         "Status": "Complete",
-        "DevComment": "Refactor almost done",
+        "DevComment": "",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/ca/statutes/us_ca_statutes.sql)"
     },
@@ -85,10 +85,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/ct/statutes",
-        "Status": "Refactoring",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/ct/statutes/us_ct_statutes.sql)"
     },
     {
         "Country": "us",
@@ -98,10 +98,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/de/statutes",
-        "Status": "Refactoring",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/de/statutes/us_de_statutes.sql)"
     },
     {
         "Country": "us",
@@ -150,7 +150,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/fl/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
@@ -163,7 +163,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/hi/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
