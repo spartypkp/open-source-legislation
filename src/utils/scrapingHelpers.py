@@ -143,16 +143,23 @@ def get_url_as_soup(url: str, delay_time: Optional[int] = None) -> BeautifulSoup
             time.sleep(delay_time)
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an exception for HTTP errors
+        response.encoding="utf-8"
         soup = BeautifulSoup(response.text, 'html.parser')
         return soup
     except HTTPError as e:
+        print(response.headers)
+        print(response.reason)
+        print(response.cookies)
         print(f"HTTP Error {e.response.status_code} for URL: {url}")
+        exit(1)
         raise e
     except ConnectionError as e:
         print(f"Connection error for URL: {url}")
+        print(e)
         raise e
     except Exception as e:
         print(f"An error occurred!")
+        print(e)
         raise e
 
 

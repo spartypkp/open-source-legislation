@@ -58,7 +58,7 @@ BASE_URL = "https://www.akleg.gov"
 # The URL of the Table of Contents
 TOC_URL = "https://www.akleg.gov/basis/statutes.asp"
 # Start scraping at a specific top_level_title
-SKIP_TITLE = 0 # 0/47 titles
+SKIP_TITLE = 6 # 0/47 titles
 RESERVED_KEYWORDS = ["[Repealed"]
 
 # === Jurisdiction Specific Global Variables ===
@@ -78,14 +78,10 @@ def scrape_all_titles(corpus_node: Node):
     chrome_options.add_argument("--headless=new")
     DRIVER = webdriver.Chrome(options=chrome_options)
     DRIVER.get(TOC_URL)
-    DRIVER.implicitly_wait(.25)
 
-    
-    
     toc_nav_container = DRIVER.find_element(By.ID, "TOC_A")
     toc_nav_container.click()
-    
-    
+
     for i in range(SKIP_TITLE, 47):
         titles_container = WebDriverWait(DRIVER, 20).until(selenium_element_present(DRIVER, (By.ID, "TitleToc")))
         all_titles = WebDriverWait(DRIVER, 20).until(selenium_elements_present(titles_container, (By.TAG_NAME, "li")))
@@ -101,15 +97,12 @@ def scrape_all_titles(corpus_node: Node):
             top_level_title = top_level_title[:-1]
         
         # I want to convert top level title to a string with leading zeros ex: 1 -> 01, 21 -> 21
-        
-        
         citation = top_level_title.zfill(2)
         link = TOC_URL + "#" + citation
         node_type = "structure"
         level_classifier = "title"
         title_node_id = f"{corpus_node.node_id}/{level_classifier}={top_level_title}"
         
-
         ### Get title information, Add title node
         title_node = Node(
             id=title_node_id,
@@ -124,24 +117,22 @@ def scrape_all_titles(corpus_node: Node):
         )
         
         insert_node(node=title_node, table_name=TABLE_NAME, ignore_duplicate=True, debug_mode=True)
-
-        print(f"Title Name: {title_a_tag.text}")  
         title_a_tag.click()
         
 
         scrape_all_chapters(title_node)
-
         title_return = DRIVER.find_element(By.ID, "titleLink")
         title_return.click()
         
 
 def scrape_all_chapters(node_parent: Node):
-    global DRIVER
     
     chapters_container = DRIVER.find_element(By.ID, "ChapterToc")
-    all_chapters = WebDriverWait(DRIVER, 20).until(selenium_elements_present(chapters_container, (By.XPATH, ".//a[contains(@href, 'javascript:void(0)')]")))
-    print(f"Length of chapters_container: {len(all_chapters)}")
-
+    try:
+        all_chapters = WebDriverWait(DRIVER, 20).until(selenium_elements_present(chapters_container, (By.XPATH, ".//a[contains(@href, 'javascript:void(0)')]")))
+    # Title has no chapters (See Title 7)
+    except:
+        return
 
     for i in range(len(all_chapters)):
         # Find ChapterToc and all_chapters again, prevent StaleElementReferenceException
@@ -149,26 +140,17 @@ def scrape_all_chapters(node_parent: Node):
             chapters_container = DRIVER.find_element(By.ID, "ChapterToc")
             all_chapters = WebDriverWait(DRIVER, 20).until(selenium_elements_present(chapters_container, (By.XPATH, ".//a[contains(@href, 'javascript:void(0)')]")))
 
-        
         chapter_container= all_chapters[i]
-        
-        
         chapter_a_soup = BeautifulSoup(chapter_container.get_attribute("outerHTML"), features="html.parser")
-        #print(chapter_a_soup.prettify())
 
         chapter_name = chapter_a_soup.get_text()
-
-        print(f"Chapter: {chapter_name}")
-        if "No Sections" in chapter_name:
-            raise ValueError("Chapter name indicates no sections!")
-        
         chapter_number = chapter_name.split(" ")[1]
+
         if chapter_number[-1] == ".":
             chapter_number = chapter_number[:-1]
         
         node_type = "structure"
         level_classifier = "chapter"
-        
         citation =  node_parent.citation + "." + chapter_number
         chapter_number = str(int(chapter_number))
         link = TOC_URL + "#" + citation
@@ -194,9 +176,6 @@ def scrape_all_chapters(node_parent: Node):
         )
         
         insert_node(node=chapter_node, table_name=TABLE_NAME, debug_mode=True)
-        
-            
-        
         # If chapter is not reserved
         if not status:
             chapter_container.click()
@@ -211,8 +190,11 @@ def scrape_all_chapters(node_parent: Node):
 def scrape_all_sections( node_parent: Node):
     # ".//a[contains(@href, 'statutes.asp?year=2023')]"
     sections_container = DRIVER.find_element(By.ID, "ChapterToc")
-    
-    all_sections =  WebDriverWait(DRIVER, 20).until(selenium_elements_present(sections_container, (By.XPATH, ".//a[contains(@href, 'statutes.asp?')]")))
+    try:
+        all_sections =  WebDriverWait(DRIVER, 20).until(selenium_elements_present(sections_container, (By.XPATH, ".//a[contains(@href, 'statutes.asp?')]")))
+    # Indicates a case where a chapter has NO sections
+    except:
+        return
     current_article = ""
     
     for i, section_element in enumerate(all_sections):
@@ -220,23 +202,20 @@ def scrape_all_sections( node_parent: Node):
         section_container = BeautifulSoup(section_element.get_attribute("outerHTML"), features="html.parser")
 
         node_name = section_container.get_text().strip()
-        #print(f"Section Name: {node_name}")
-        
-        
-        if "No Sections" in node_name:
-            return
-        
         number = node_name.split(" ")[1]
         
         if number[-1] == ".":
             number = number[:-1]
         
         section_citation = number
-
         node_type = "content"
         level_classifier = "section"
         link = TOC_URL + "#" + section_citation
         node_text=None
+        core_metadata = None
+        processing = None
+        addendum=None
+        incoming_references=None
 
         status=None
         for word in RESERVED_KEYWORDS:
@@ -244,10 +223,8 @@ def scrape_all_sections( node_parent: Node):
                 status = "reserved"
                 break
         
-        
         # Don't process reserved section text/addendumn
-        if not status:
-            
+        if not status:  
             #Example section link:  https://www.akleg.gov/basis/statutes.asp#02.15.010
             chrome_options = Options()
             chrome_options.add_argument("--headless=new")
@@ -256,7 +233,8 @@ def scrape_all_sections( node_parent: Node):
             
             # sideSection is always present, however content is dynamically loaded
             sidebar_section_container = section_driver.find_element(By.ID, "sideSection")
-            # Wait until side section content loads (Can take up to 10 seconds, sometimes fails)
+            # Wait until side section content loads (Can take up to 10 seconds, sometimes fails) 
+            # We wont actually use this, just need it as indicator for page load
             sidebar_section_content = WebDriverWait(section_driver, 20).until(selenium_element_present(sidebar_section_container, (By.TAG_NAME, "div")))      
             # Get the main section content as Beautiful Soup Element         
             section_soup = BeautifulSoup(section_driver.page_source, features="html.parser").body
@@ -302,7 +280,7 @@ def scrape_all_sections( node_parent: Node):
 
             
             node_text = NodeText()
-            processing = None
+            
             # This is so dirty, and I apologize for this shit
             # Scrape main section content
             while True:
@@ -326,19 +304,28 @@ def scrape_all_sections( node_parent: Node):
                         # Indicates a same-site (same corpus) reference, corpus is None
                         if "#" in href:
                             hashtag_index = href.index("#")
-                            print(hashtag_index)
+                            
                             href_clean = href[hashtag_index+1:]
-                            print(href_clean)
+                           
                             href_split = href_clean.split(".")
-                            print(href_split)
-                            constructed_node_id = f"us/ak/statutes/title={href_split[0]}/chapter={str(int(href_split[1]))}/section={href_clean}"
+                           
+                            main_constructed_node_id = f"us/ak/statutes"
+                            # Iterate and construct the reference ID
+                            for i, href_number in enumerate(href_split):
+                                if i == 0:
+                                    main_constructed_node_id += f"/title={str(int(href_number))}"
+                                elif i == 1:
+                                    main_constructed_node_id += f"/chapter={str(int(href_number))}"
+                                else:
+                                    main_constructed_node_id += f"/section={href_clean}"
+                                
                             if processing is None:
                                 processing = {}
 
                             processing["node_text"] = "Check Article existince, update reference id"
                             
                             ref_link = "https://www.akleg.gov/basis/" + href
-                            reference = Reference(text=txt, placeholder=None, id=constructed_node_id)
+                            reference = Reference(text=txt, placeholder=None, id=main_constructed_node_id)
                             reference_hub.references[ref_link] = reference
                         # Indicates an external site (different corpus) reference, set corpus to other
                         # TODO: Experiment for common outgoing corpus tags and incorporate logic here
@@ -357,7 +344,6 @@ def scrape_all_sections( node_parent: Node):
             # Process the addendum container
             addendum_soup = BeautifulSoup(section_driver.page_source, features='html.parser')
             addendum_container = addendum_soup.find(id="sideSection").find("div")
-            print(addendum_container.prettify())
             addendum = Addendum()
             incoming_references = None
             
@@ -369,7 +355,6 @@ def scrape_all_sections( node_parent: Node):
                 category = None
                 last_reference_link = ""
                 
-           
                 for i, element in enumerate(addendum_container.contents):
                     
                     if isinstance(element, Tag):
@@ -378,7 +363,6 @@ def scrape_all_sections( node_parent: Node):
                             continue
 
                         txt = element.get_text()
-                        print(f"BS4 tag text: {txt}")
                         # Heading indicates new category
                         if element.name == "h5":
                             
@@ -400,7 +384,7 @@ def scrape_all_sections( node_parent: Node):
                             if category == "history":
                                 if addendum.history.reference_hub is None:
                                     addendum.history.reference_hub = ReferenceHub()
-                                addendum.history.reference_hub[tag_link] = reference
+                                addendum.history.reference_hub.references[tag_link] = reference
                             elif category == "references":
                                 if incoming_references is None:
                                     incoming_references = ReferenceHub()
@@ -435,7 +419,6 @@ def scrape_all_sections( node_parent: Node):
                     # Handle regular text, not BS4 Tags
                     else:
                         txt = element
-                        print(f"Non-BS4 element txt: {txt}")
                         if txt == "":
                             continue
                         # Add text to the history addendum

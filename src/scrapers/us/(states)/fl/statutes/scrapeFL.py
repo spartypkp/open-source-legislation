@@ -1,385 +1,254 @@
-from bs4 import BeautifulSoup, NavigableString
-import urllib.parse 
-from urllib.parse import unquote, quote
-import urllib.request
-import requests
-import json
-import re
-import urllib.request
-from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 import os
 import sys
-import psycopg2
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
+from typing import List, Tuple
+import time
+import json
+import re
+
+from pathlib import Path
+
 DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
+# Get the current file's directory
+current_file = Path(__file__).resolve()
 
-# Define the type of exception you want to retry on.
-# In this case, we are retrying on URLError which can be thrown by urllib.request.urlopen
-from urllib.error import URLError
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 
 
+
+SKIP_TITLE = 0 # If you want to skip the first n titles, set this to n
+COUNTRY = "us"
+# State code for states, 'federal' otherwise
+JURISDICTION = "fl"
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://www.flsenate.gov"
-TABLE_NAME = "fl_node"
- = "madeline"
+TOC_URL = "https://www.flsenate.gov/Laws/Statutes"
+SKIP_TITLE = 0 
+RESERVED_KEYWORDS = []
+
 
 def main():
-    insert_jurisdiction_and_corpus_node()
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
+    scrape_all_titles(corpus_node)
     
-    with open(f"{DIR}/data/top_level_titles.txt") as text_file:
-        for i, line in enumerate(text_file):
-            url = line
-            if ("Title" in url):
-                top_level_title = url.split("Title")[-1].strip()
-            else:
-                continue
+def scrape_all_titles(node_parent: Node):
+
+    soup = get_url_as_soup(TOC_URL)
+    statutes_container = soup.find("div", class_="statutesTOC")
+    all_title_containers = statutes_container.find_all("a")
+
+    for i, title_container in enumerate(all_title_containers):
+        if i < SKIP_TITLE:
+            continue
+
+        href = title_container["href"]
+        link = f"{BASE_URL}/{href}"
+
+        title_spans = title_container.find_all("span")
+        number_span = title_spans[0]
+
+        node_name = number_span.get_text()
+        number = node_name.split(" ")[1]
+
+        level_classifier = "title"
+
+        description_span = title_spans[1]
+
+        node_name += " " + description_span.get_text()
+
+        chapter_span = title_spans[2]
+        core_metadata = {"chapterRange": chapter_span.get_text()}
+        node_type = "structure"
+
+        parent = node_parent.node_id
+        node_id = f"{parent}/{level_classifier}={number}"
+        title_node = Node(
+            id=node_id, 
+            link=link,
+            top_level_title=number, 
+            node_type=node_type, 
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name, 
+            parent=parent,
+            core_metadata=core_metadata
+        )
+        insert_node(title_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
+        scrape_chapters(title_node)
+
+
+def scrape_chapters(node_parent: Node):
+    print(str(node_parent.link))
+    soup = get_url_as_soup(str(node_parent.link))
+
+    statutes_container = soup.find("div", class_="statutesTOC")
+
+    chapter_parent = statutes_container.find("ol", class_="chapter")
+    all_chapter_containers = chapter_parent.find_all("a")
     
-            scrape_per_title(url, top_level_title, "fl/statutes/")
 
-# CREATE TABLE fl_node (
-#     node_order SERIAL,
-#     node_id text PRIMARY KEY,
-#     node_top_level_title text,
-#     node_type text,
-#     node_level_classifier text,
-#     node_text text[],                             
-#     node_text_embedding vector(1536),
-#     node_citation text,
-#     node_link text,
-#     node_addendum text,
-#     node_name text,
-#     node_name_embedding vector(1536),
-#     node_summary text,
-#     node_summary_embedding vector(1536),
-#     node_hyde text[],
-#     node_hyde_embedding vector(1536),
-#     node_parent text,
-#     node_direct_children text[],
-#     node_siblings text[],
-#     node_references jsonb,
-#     node_incoming_references jsonb,
-#     node_tags jsonb
-# );
+    for i, chapter_container in enumerate(all_chapter_containers):
+        
+        
 
+        href = chapter_container["href"]
+        link = f"{BASE_URL}/{href}"
 
+        chapter_spans = chapter_container.find_all("span")
+        
+        number_span = chapter_spans[0]
+        node_name = number_span.get_text().strip()
+        
+        
+        number = node_name.split(" ")[1]
+        
+        level_classifier = "chapter"
 
-# Scrapes all nodes for a given top level title. Provide the url and the name
-# https://www.flsenate.gov/Laws/Statutes/2023/Title1/#Title1
-def scrape_per_title(url, top_level_title, node_parent):
+        description_span = chapter_spans[1]
 
+        node_name += " " + description_span.get_text().strip()
 
-    response = make_request(url)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text, 'html.parser')
+        
+        node_type = "structure"
 
-    # Find title, and add it as a node
-    # <li>
-    #   <a TITLE LINK
-    #       <span id="Title1"
-    #       <span class="descript"
-    #       <span class="chapterRange"
-    #   < ol class="chapter"
+        parent = node_parent.node_id
+        node_id = f"{parent}/{level_classifier}={number}"
+
+        chapter_node = Node(
+            id=node_id, 
+            link=link,
+            top_level_title=number, 
+            node_type=node_type, 
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name, 
+            parent=parent
+            
+        )
+        
+        insert_node(chapter_node, TABLE_NAME, debug_mode=True)
+        find_section_links(chapter_node)
+
+def find_section_links(node_parent: Node):
+    soup = get_url_as_soup(str(node_parent.link))
+
+    section_parent = soup.find("div", class_="CatchlineIndex")
+
+    all_section_containers = section_parent.find_all("a")
+
+    for i, section_container in enumerate(all_section_containers):
+        href = section_container['href']
+        link = f"{BASE_URL}/{href}"
+        
+        scrape_section(node_parent, link)
+
+def scrape_section(node_parent: Node, link: str):
+    soup = get_url_as_soup(link)
+    main_container = soup.find("div", id="main")
+    section_container = main_container.find("div", class_="Section")
     
-
-    # How do we extract title?
-    # 1. Find the span id= Title# element
-    # 2. The above <a> tag is the title_container
-    # 3. Iterate over the title container
-     # - Get first part of node_name: "Title I"
-     # - Get second part of node_name: "CONSTRUCTION OF STATUTES"
-     # - Get extra data (node_tags): {chapterRange: "(Ch. 1-2)"
-    # 4. Move on to get the chapter container
-
-    # top_level_title = 1
-    # title_name: Title I
-    title_span = soup.find(id=f"Title{top_level_title}")
-    title_name = title_span.get_text()
-    title_container = title_span.parent
-    title_description = title_container.find("span", class_="descript")
-    title_name += " - " + title_description.get_text()
-    # title_name: Title I - CONSTRUCTION OF STATUTES
-
-    chap_range = title_container.find("span", class_="chapterRange").get_text()
-    node_tags = {}
-    node_tags['chap_range'] = chap_range
-    node_tags = json.dumps(node_tags)
-    # add the title as a node
-    node_type = "structure"
-    node_level_classifier = "TITLE"
-    # fl/statutes/
-    node_id = f"{node_parent}TITLE={top_level_title}/" 
-    node_name = title_name
+    number_container = section_container.find("span", class_="SectionNumber")
+    number = number_container.get_text().strip()
     
-    # Figure out node link
-    node_link = url
+    name_container = section_container.find("span", class_="CatchlineText")
+    node_name = name_container.get_text().strip()
+
+    node_name = number + " " + node_name
+    node_type = "content"
+    level_classifier="section"
+    
+    parent = node_parent.node_id
+    node_id = f"{parent}/{level_classifier}={number}"
+    citation = f"Fla. Stat. § {number}"
+    
+    text_container = section_container.find("span", class_="SectionBody")
+    all_paragraph_containers = text_container.find_all(recursive=False)
     node_text = None
-    node_citation = None
-    node_addendum = None
-    node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, None, None, node_tags)
-    insert_node(node_data)
-    
-    chapters_ol = title_container.parent.find("ol", class_="chapter")
-        
-    chapter_items = chapters_ol.find_all("li", recursive=False)
+    addendum=None
+    core_metadata=None
 
-    for chapter_item in chapter_items:
-        a_tag = chapter_item.find("a")
-        chapter_link = a_tag['href']
+    status=None
+    for word in RESERVED_KEYWORDS:
+        if word in node_name:
+            status = "reserved"
+            break
 
-        expanded_url = BASE_URL + chapter_link + "/All"
-        print(expanded_url)
-        
-        # Handle the chapter here, then feed in the "expandedChapter to scrape"
-        
-        scrape(expanded_url, top_level_title, node_id)
+    if not status:
+        node_text = NodeText()
 
+        for i, paragraph_container in enumerate(all_paragraph_containers):
+            text = paragraph_container.get_text().strip()
+            node_text.add_paragraph(text=text)
 
-# First url: https://www.flsenate.gov/Laws/Statutes/2023/Chapter1
-def scrape(url, top_level_title, node_parent):
-    
-    response = make_request(url)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text, 'html.parser')
-    
-    # logic for content node section 
+        addendum = Addendum()
+        addendum_container = section_container.find("div", class_="History")
+        addendum_text = addendum_container.get_text().strip()
+        addendum.history = AddendumType(type="history", text=addendum_text)
 
-    # To go into a section class=CatchlineIndex
-    # For every IndexItem find 'a' and then section index is href
-
+        # Find extra goodies
+        note_container = section_container.find("div", class_="Note")
+        if note_container:
+            if core_metadata is None:
+                core_metadata = {}
+            core_metadata["Note"] = note_container.get_text().strip()
 
     
-    # Chapter nodes
-    # Part nodes
-    # Section nodes
-
-    chapter_container = soup.find("div", class_="Chapter")
-
-    
-    node_type = "structure"
-    node_level_classifier = "CHAPTER"
-    node_link = url
-
-    chap_num = chapter_container.find("div", class_="ChapterNumber")
-    chapter_number = chap_num.get_text().split(" ")[-1]
-    chapter_node_id = f"{node_parent}CHAPTER={chapter_number}/"
-
-
-    chap_name = chapter_container.find("div", class_="ChapterName")
-    chapter_name = chap_name.get_text().strip()
-    node_name = "Chapter " + chapter_number + " - " + chapter_name
-
-    node_text = None
-    node_citation = None
-    node_addendum = None
-    node_data = (chapter_node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-    insert_node(node_data)
-    node_parent = chapter_node_id
-
-    all_parts = chapter_container.find_all(class_="Part")
-    print(all_parts is None or len(all_parts) == 0)
-    if all_parts is None or len(all_parts) == 0:
-        all_section_divs = chapter_container.find_all(class_="Section")
-
-        for i, section in enumerate(all_section_divs):
-            node_type = "content"
-            node_level_classifier = "SECTION"
-            node_link = url
-            
-
-            node_text = []
-            # Make a citation
-            
-            node_addendum = None
-
-            section_number = section.find(class_="SectionNumber").get_text().strip()
-            node_citation = f"Fla. Stat. § {section_number}"
-            node_name = "Section " + section_number + " - "
-
-            section_name = section.find(class_="Catchline")
-            section_name_add = section_name.get_text().strip()
-            node_name += section_name_add
-
-            section_text = section.find(class_="SectionBody")
-            # Need to loop over every html element in sectionBody
-            for i, element in enumerate(section_text.find_all(recursive=False)):
-                current_text = element.get_text().strip()
-                node_text.append(current_text)
-
-            history = section.find(class_="History")
-            node_addendum = history.get_text().strip()
-            
-            node_tags = None
-            if section.find(class_="Note") is not None:
-                node_tags = {}
-                note = section.find(class_="Note").get_text().strip()
-                node_tags['note'] = note
-                node_tags = json.dumps(node_tags)
-            
-            
-            node_id = f"{node_parent}SECTION={section_number}"
-            node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, None, None, node_tags)
-            insert_node(node_data)
-            
-    else:
-        for i, part in enumerate(all_parts):
-
-            node_type = "structure"
-            node_level_classifier = "PART"
-            node_link = url
-
-            
-            part_number = part.find("div", class_="PartNumber").get_text()
-            part_number = part_number.split(" ")[-1]
-            part_node_id = f"{node_parent}PART={part_number}/"
-
-
-            part_name = part.find("span", class_="PartTitle")
-            part_name_add = part_name.get_text()
-            node_name = "Part " + part_number + " - " + part_name_add
-
-            node_text = None
-            node_citation = None
-            node_addendum = None
-            node_data = (part_node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-            insert_node(node_data)
-
-            
-            all_section_divs = part.find_all(class_="Section")
-
-            for i, section in enumerate(all_section_divs):
-                node_type = "content"
-                node_level_classifier = "SECTION"
-                node_link = url
-                section_node_parent = part_node_id
-
-                node_text = []
-                # Make a citation
-                node_citation = None
-                node_addendum = None
-
-
-                section_num = section.find(class_="SectionNumber")
-                section_number = section_num.get_text().strip()
-                node_name = "Section " + section_number + " - "
-
-                section_name = section.find(class_="Catchline")
-                section_name_add = section_name.get_text().strip()
-                node_name += section_name_add
-
-                section_text = section.find(class_="SectionBody")
-                
-                # Need to loop over every html element in sectionBody
-                for i, element in enumerate(section_text.find_all(recursive=False)):
-                    current_text = element.get_text().strip()
-                    node_text.append(current_text)
-
-                history = section.find(class_="History")
-                node_addendum = history.get_text().strip()
-                
-                node_tags = None
-                if section.find(class_="Note") is not None:
-                    node_tags = {}
-                    note = section.find(class_="Note").get_text().strip()
-                    node_tags['note'] = note
-                    node_tags = json.dumps(node_tags)
-                
-
-                node_id = f"{section_node_parent}SECTION={section_number}"
-                node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, section_node_parent, None, None, None, None, node_tags)
-                insert_node(node_data)
-
-
-
-    
-
-                # add chapter as a structure node
-                # call scrape_per_title recursively
-                # url is chapter_link 
-                # node_parent needs to be recenetly added chapter node id
-
-
-
-# THIS FUNCTION SHOULD ONLY BE RAN ONCE PER SCRAPE
-def insert_jurisdiction_and_corpus_node():
-    jurisdiction_row_data = (
-        "fl/",
-        None,
-        "jurisdiction",
-        "STATE",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+    section_node = Node(
+        id=node_id, 
+        link=link,
+        citation=citation,
+        top_level_title=node_parent.top_level_title, 
+        node_type=node_type, 
+        level_classifier=level_classifier,
+        number=number,
+        node_name=node_name, 
+        parent=node_parent.node_id,
+        status=status,
+        node_text=node_text,
+        addendum=addendum
     )
-    corpus_row_data = (
-        "fl/statutes/",
-        None,
-        "corpus",
-        "CORPUS",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        "fl/",
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    try:
-        util.insert_row_to_local_db(, TABLE_NAME, jurisdiction_row_data)
-    except psycopg2.errors.UniqueViolation as e:
-        print(e)
-    try:
-        util.insert_row_to_local_db(, TABLE_NAME, corpus_row_data)
-    except psycopg2.errors.UniqueViolation as e:
-        print(e)
-    return
+        
+    insert_node(section_node, TABLE_NAME, debug_mode=True)
+    
 
 
 
 
-
-# Decorator to implement exponential backoff retry strategy
-@retry(
-    retry=retry_if_exception_type(URLError),       # Retry on URLError
-    wait=wait_exponential(multiplier=1, max=60),   # Exponential backoff with a max wait of 60 seconds
-    stop=stop_after_attempt(5)                     # Stop after 5 attempts
-)
-def make_request(url):
-    # This will try to open the URL. If it fails with URLError, it will retry.
-    response = urllib.request.urlopen(url)
-    return response
 
 
 
 
 
     
+
+
+  
 
 if __name__ == "__main__":
      main() 

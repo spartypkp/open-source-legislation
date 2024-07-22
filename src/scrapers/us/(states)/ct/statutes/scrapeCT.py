@@ -122,9 +122,8 @@ def scrape_chapters(node_parent: Node):
         try:
             node_name_start = link_container.get_text().strip()
         except:
-            # TEST THIS!
-            status = "reserved"
-            raise ValueError(f"Chapter for index {i} did not have a link container! {chapter.prettify()}")
+            # Last chapter found, return
+            return
             
         number = node_name_start.split(" ")[1]
         link = "https://www.cga.ct.gov/current/pub/" + link_container['href'] + "\n"
@@ -157,14 +156,13 @@ def scrape_chapters(node_parent: Node):
         
 def scrape_sections(node_parent: Node):
     
-    
     soup = get_url_as_soup(node_parent.link)
     while True:
         br_tag = soup.find("br", recursive=False)
         if br_tag is None:
             break
         br_tag.decompose()
-        print("Decomposed 1 tag!")
+        
 
 
     for i, section in enumerate(soup.find_all(class_="toc_catchln")):
@@ -190,6 +188,7 @@ def scrape_sections(node_parent: Node):
         addendum = None
         citation = f"Conn. Gen. Stat. § {node_parent.top_level_title}-{number}"
         core_metadata = None
+        
         # Don't scrape text of reserved sections
         if not status:
             node_text = NodeText()
@@ -199,11 +198,18 @@ def scrape_sections(node_parent: Node):
 
             iterator = soup.find(id=f"{node_sec_id}").parent
             while iterator:
+                
+                
                 # Possibly ignoring tables here?
                 if iterator.name == "table" and 'class' in iterator.attrs and iterator['class'][0] == "nav_tbl":
                     break
 
                 txt = iterator.get_text().strip()
+                # No matter what, skip all empty text elements
+                if txt == "":
+                    iterator = iterator.next_sibling.next_sibling
+                    continue
+
                 # Handle non-p tags
                 if iterator.name != "p":
                     node_text.add_paragraph(txt)  
@@ -238,16 +244,20 @@ def scrape_sections(node_parent: Node):
                         addendum.source = AddendumType(type="history", text=txt, reference_hub=paragraph_references)
                     else:
                         annotations.append(txt)
-
-                iterator = iterator.next_sibling.next_sibling
                 
-            print(annotations)
+                if iterator.next_sibling.next_sibling.name == "None" or iterator.next_sibling.next_sibling.name is None:
+                    iterator = iterator.next_sibling
+                else:
+                    iterator = iterator.next_sibling.next_sibling
+
+            
             # Add annotations to metadata
             if len(annotations) > 0:
                 core_metadata["annotations"] = annotations
             
 
-
+        if core_metadata == {}:
+            core_metadata=None
         ### FOR ADDING A CONTENT NODE, allowing duplicates
         section_node = Node(
             id=node_id, 

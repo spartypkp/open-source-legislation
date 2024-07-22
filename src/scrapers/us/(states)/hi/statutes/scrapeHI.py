@@ -1,250 +1,184 @@
-import psycopg2
 import os
-import urllib.request
-from bs4 import BeautifulSoup
 import sys
-DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import re
+from selenium.webdriver.remote.webelement import WebElement
+
+from typing import List, Tuple
 import time
 import json
-from bs4.element import Tag
+import re
+
+from pathlib import Path
+
+DIR = os.path.dirname(os.path.realpath(__file__))
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 
 
 
-# Replacle with the state/country code
+SKIP_TITLE = 0 # If you want to skip the first n titles, set this to n
+COUNTRY = "us"
+# State code for states, 'federal' otherwise
 JURISDICTION = "hi"
-TABLE_NAME =  f"{JURISDICTION}_node"
- = "will2"
-# Don't include last / in BASE_URL
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 TOC_URL = "https://www.capitol.hawaii.gov/docs/hrs.htm"
 BASE_URL = "https://www.capitol.hawaii.gov"
-# If you want to skip the first n titles, set this to n
-SKIP_TITLE = 0
-# List of words that indicate a node is reserved
+SKIP_TITLE = 0 
 RESERVED_KEYWORDS = ["REPEALED", "Repealed"]
+DRIVER = None
 
-CHAPTER_PARENT = None
-TOP_LEVEL_TITLE = 0
+
 
 def main():
-    insert_jurisdiction_and_corpus_node()
-    with open(f"{DIR}/data/top_level_titles.txt","r") as read_file:
-        for i, line in enumerate(read_file):
-            if i < SKIP_TITLE:
-                continue
-            url = line.strip()
-            try:
-                scrape_chapter(url)
-            except:
-                continue
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
+    scrape_toc_page(corpus_node)
     
-
-def scrape_chapter(url):
-    global CHAPTER_PARENT
-
-    #print(f"=== Scrape_chapter ===\n {url}")
+def scrape_toc_page(node_parent: Node):
+    global DRIVER
+    # Use Selenium in headless mode
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless=new")
     DRIVER = webdriver.Chrome()
-    DRIVER.get(url)
-    DRIVER.implicitly_wait(.25)
-   
-    
+    DRIVER.get(TOC_URL)
+
+
     soup = BeautifulSoup(DRIVER.page_source, features="html.parser")
 
-
-    p_tags = soup.find_all('p')
-
-    # Extract the structure nodes, Division or Title
-    node_parent = None
-    skipNext = False
-    for p in p_tags:
-        txt = get_text_clean(p)
+    all_structure_node_containers = soup.find_all("a")
+    for i, structure_node_container in enumerate(all_structure_node_containers):
+        if i > 100:
+            exit(1)
+        node_name = structure_node_container.get_text().strip()
+        level_classifier = node_name.split(" ")[0].strip().lower()
         
-        if "Chapter" in txt or "CHAPTER" in txt or "Subtitle" in txt or "SUBTITLE" in txt:
-            break
-        if txt == "":
+        if (level_classifier == "division" or level_classifier == "title"):
             continue
-        if "DIVISION" in txt:
-            continue
-
-        if skipNext:
-            skipNext = False
-            continue
-         
-        skip, skipNext, node_parent = extract_and_insert_level(url, p)
-        CHAPTER_PARENT = node_parent
-        if skip:
-            return
+        href = structure_node_container['href']
+        scrape_chapter(node_parent, href)
         
-
-        
-        
-    #print(f"CHAPTER_PARENT: {CHAPTER_PARENT}")
-
-    # Find the start of sections
-    section_start_index = -1
-    node_type = "structure"
-    for i, p in enumerate(p_tags):
-        node_type = "structure"
-        txt = get_text_clean(p)
-        if txt == "Section" or "Part " in txt[0:10]:
-            section_start_index = i
-            break
-        # Chapter itself is repealed
-        if "REPEALED" in txt:
-            node_type = "reserved"
-            node_number_temp = url.split("/")[-1].split(".")[0].split("_")[-1].replace("000", "").replace("00", "").replace("-", "")
-            chapter_name = f"Chapter {node_number_temp} REPEALED"
-
-            break
-    #print(f"section_start_index: {section_start_index}")
-    node_parent = CHAPTER_PARENT
-    if node_type != "reserved":
-        # Extract the chapters/subtitles
-        subtitle_name = None
-        chapter_name = None
-        possible_node_name = ""
-        for i in range(section_start_index-2, -1, -1):
-            #print(i)
-            p_element = p_tags[i]
-            
-            if p_element['class'][0] == "XNotes":
-                print("Found XNotes, breaking.")
-                break
-            if p_element.find("a"):
-                print("Found a section link, breaking.")
-                break
-            txt = get_text_clean(p_element)
-            #print(txt)
-            possible_node_name = txt + " " + possible_node_name
-            if "CHAPTER" in txt or "Chapter" in txt:
-                # Found second chapter, add as reserved
-                #print("Chapter name: ", chapter_name)
-                if chapter_name is not None:
-                    print("Reserved chapter found")
-                    reserved_chapter_name = possible_node_name
-                    reserved_chapter_num = reserved_chapter_name.split(" ")[1]
-                    reserved_chap_node_data = (f"{node_parent}CHAPTER={reserved_chapter_num}/", TOP_LEVEL_TITLE, "reserved", "CHAPTER", None, None, None, url, None, reserved_chapter_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-                    skip_reserved_chapter = insert_node_skip_duplicate(reserved_chap_node_data)
-                    break
-                #print("Found chapter")
-                chapter_name = possible_node_name
-                possible_node_name = ""
-            if "SUBTITLE" in txt:
-                subtitle_name = possible_node_name
-                possible_node_name = ""
-
-            
-        
-        
-        node_type = "structure"
-        # Possibly insert a subtitle
-        if subtitle_name:
-            node_level_classifier = "SUBTITLE"
-            
-            node_name = subtitle_name
-            node_number = subtitle_name.split(" ")[1]
-            if node_number[-1] == ".":
-                node_number = node_number[:-1]
-            subtitle_node_id = f"{CHAPTER_PARENT}{node_level_classifier}={node_number}/"
-            node_link = url
-            node_data = (subtitle_node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, CHAPTER_PARENT, None, None, None, None, None)
-            node_parent = subtitle_node_id
-
-            skip_subtitle = insert_node_skip_duplicate(node_data)
-            
-        
-    
-    #print(f"chapter_name: {chapter_name}")
-        
-    # Always insert a chapter
-    node_level_classifier = "CHAPTER"
-    node_name = chapter_name
-    node_number = chapter_name.split(" ")[1]
-    if node_number[-1] == "." or node_number[-1] == "]":
-        node_number = node_number[:-1]
-    node_id = f"{node_parent}{node_level_classifier}={node_number}/"
-    node_link = url
-    node_data = (node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-    node_parent = node_id
-    real_parent = node_id
-    skip_chapter = insert_node_skip_duplicate(node_data)
-
-    if skip_chapter:   
-        return
-    if node_type == "reserved":
-        return
     
     
 
-    for i, p in enumerate(p_tags):
-        if i < section_start_index:
-            continue
-        txt = get_text_clean(p)
-        #print(f"i: {i}, extraction txt: {txt}")
-        # Structure Node
-        if p.find("a") is None:
-            # Case 1: Add a structure node
-            if "Part" in txt[0:10]:
-                node_name = txt
-                node_number = node_name.split(" ")[1]
-                if node_number[-1] == ".":
-                    node_number = node_number[:-1]
+def scrape_chapter(node_parent: Node, url: str):
+    chapter_driver = webdriver.Chrome()
+    chapter_driver.get(url)
 
-                node_level_classifier = "PART"
-                node_link = url
-                node_id = f"{real_parent}{node_level_classifier}={node_number}/"
-                node_data = (node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-                node_parent = node_id
-                skip = insert_node_skip_duplicate(node_data)
-                
+   
+    soup = BeautifulSoup(chapter_driver.page_source, features="html.parser")
+
+    
+
+    structure_containers = soup.find_all("p", attrs={"align": "center"})
+
+    node_type="structure"
+    link=url
+    
+    
+
+    for i, structure_container in enumerate(structure_containers):
+        node_name = structure_container.get_text().strip()
+        print(node_name)
+        if "DIVISION" in node_name:
+            level_classifier = "division"
+            number_text = node_name.replace("DIVISION","").strip()
+            number = number_text.split(" ")[0]
+            number=number.rstrip(".")
+            division_parent=node_parent.node_id
+            division_node_id = f"{division_parent}/division={number}"
+            division_node = Node(
+                id=division_node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=number,
+                parent=division_parent
+            )
+            insert_node(division_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
+            node_parent=division_node
+        elif "TITLE" in node_name:
+            level_classifier="title"
+            number_text = node_name.replace("TITLE","").strip()
+            number = number_text.split(" ")[0]
+            number=number.rstrip(".")
+            title_parent=node_parent.node_id
+            title_node_id = f"{title_parent}/title={number}"
+            title_node = Node(
+                id=title_node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=title_parent
+            )
+            insert_node(title_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
+            node_parent=title_node
+        elif "CHAPTER" in node_name:
+            level_classifier="chapter"
+            number_text = node_name.replace("CHAPTER","").strip()
+            number = number_text.split(" ")[0]
+            number=number.rstrip(".")
+            chapter_parent=node_parent.node_id
+            chapter_node_id = f"{chapter_parent}/chapter={number}"
+            chapter_node = Node(
+                id=chapter_node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=chapter_parent
+            )
+           
+            node_parent=chapter_node
+        else:
+            if node_name == "":
                 continue
-            # Case 2: Skipping "Section" header
-            elif "Section" in txt:
-                #print("Skipping Section header")
-                continue
-            # Skipping empty format lines
-            else:
-                #print("Skipping empty format line")
-                continue
-        link_container = None
-        for a_tag in p.find_all("a"):
-            if 'href' in a_tag.attrs:
-                link_container = a_tag
-                break
+
+            if node_parent.level_classifier == "chapter":
+                node_parent.node_name += " " + node_name
+            
+    insert_node(chapter_node, TABLE_NAME,  debug_mode=True)  
+
         
-        node_citation = get_text_clean(link_container).replace(",", "")
-        node_number = node_citation.split("-")[-1]
-        
-        ### Checking if a node is reserved
-        for word in RESERVED_KEYWORDS:
-            if word in txt:
-                node_type = "reserved"
-                break
-        if node_type == "reserved":
-            reserved_node_id = f"{node_parent}SECTION={node_number}"
-            reserved_node_level_classifier = "SECTION"
-            reserved_node_link = url
-            if 'href' in link_container.attrs:
-                reserved_node_link = BASE_URL + link_container['href']
-            reserved_node_data = (reserved_node_id, TOP_LEVEL_TITLE, node_type, reserved_node_level_classifier, None, None, None, reserved_node_link, None, txt, None, None, None, None, None, node_parent, None, None, None, None, None)
-
-            insert_node_allow_duplicate(reserved_node_data)
-            node_type = "content"
+    all_section_links = soup.find_all("a")
+    for i, a_tag in enumerate(all_section_links):
+        a_tag_text = a_tag.get_text().strip()
+        if "-" not in a_tag_text:
             continue
-        #print(link_container.attrs)
+        href=f"{BASE_URL}{a_tag['href']}"
+        scrape_section(href, chapter_node)
 
-        node_link = BASE_URL + link_container['href']
-        try:
-            scrape_section(node_link, node_parent)
-        except:
-            pass
 
 
 # Division 1. Government
@@ -258,85 +192,21 @@ def scrape_chapter(url):
 # Division 5. Crimes and Criminal Proceedings
 # 37 - 41
 
-def extract_and_insert_level(url, level_container):
-    #print("=== Extract_and_insert_level ===")
-    global TOP_LEVEL_TITLE
-    skipNext = False
-    try:
-        node_name1 = get_text_clean(level_container)
-        #print(f"node_name1: {node_name1}")
-        node_name_2 = get_text_clean(level_container.next_sibling.next_sibling)
-        if node_name_2.strip() != "":
-            skipNext = True
-        #print(f"node_name_2: {node_name_2}")
-        node_name = node_name1 + " " + node_name_2
-        node_link = url
-        node_type = "structure"
-        node_number = node_name.split(" ")[1]
-        if node_number[-1] == ".":
-            node_number = node_number[:-1]
-    except:
-        return True, False,  None
+
+def scrape_section(url: str, node_parent: Node):
+    section_driver = webdriver.Chrome()
+    section_driver.get(url)
     
-
-    node_parent = f"hi/statutes/DIVISION={TOP_LEVEL_TITLE}/"
-
-    if node_number == "1":
-        node_parent = "hi/statutes/DIVISION=1/"
-        node_data = ("hi/statutes/DIVISION=1/", "1", node_type, "DIVISION", None, None, None, node_link, None, "Division 1. Government", None, None, None, None, None, "hi/statutes/", None, None, None, None, None)
-        insert_node_ignore_duplicate(node_data)
-        TOP_LEVEL_TITLE = "1"
-        
-    elif node_number == "22" or node_number == "27":
-        node_parent = "hi/statutes/DIVISION=2/"
-        node_data = (node_parent, "2", node_type, "DIVISION", None, None, None, node_link, None, "Division 3. Property; Family", None, None, None, None, None, "hi/statutes/", None, None, None, None, None)
-        insert_node_ignore_duplicate(node_data)
-        TOP_LEVEL_TITLE = "2"
-    elif node_number == "28":
-        node_parent = "hi/statutes/DIVISION=3/"
-        node_data = (node_parent, "3", node_type, "DIVISION", None, None, None, node_link, None, node_name, None, None, None, None, None, "hi/statutes/", None, None, None, None, None)
-        insert_node_ignore_duplicate(node_data)
-        TOP_LEVEL_TITLE = "3"
     
-    elif node_number == "32":
-        node_parent = "hi/statutes/DIVISION=4/"
-        node_data = (node_parent, "4", node_type, "DIVISION", None, None, None, node_link, None, node_name, None, None, None, None, None, "hi/statutes/", None, None, None, None, None)
-        insert_node_ignore_duplicate(node_data)
-        TOP_LEVEL_TITLE = "4"
-    elif node_number == "37":
-        node_parent = "hi/statutes/DIVISION=5/"
-        node_data = (node_parent, "5", node_type, "DIVISION", None, None, None, node_link, None, node_name, None, None, None, None, None, "hi/statutes/", None, None, None, None, None)
-        insert_node_ignore_duplicate(node_data)
-        TOP_LEVEL_TITLE = "5"
-
-    node_level_classifier = node_name.split(" ")[0].upper()
-    node_id = f"{node_parent}{node_level_classifier}={node_number}/"
-    node_data = (node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-     ## INSERT STRUCTURE NODE, if it's already there, skip it
-    skip = insert_node_skip_duplicate(node_data)
-    return skip, skipNext, node_id
-        
-
-
-def scrape_section(url, node_parent):
-    DRIVER = webdriver.Chrome()
-    DRIVER.get(url)
-    DRIVER.implicitly_wait(.25)
-    
-    real_parent = node_parent
-    soup = BeautifulSoup(DRIVER.page_source, features="html.parser")
+    soup = BeautifulSoup(section_driver.page_source, features="html.parser")
 
     node_type = "content"
-    node_level_classifier = "SECTION"
+    node_level_classifier = "section"
 
     # Before getting node_text, initialize defaults
     node_addendum = None
-    node_text = []
-    node_tags = {}
-    node_references = {}
-    internal = []
-    external = []
-    indentation = [] # Optional
+    node_text = None
+    core_metadata = None
 
 
     all_a_tags = soup.find_all("a")
@@ -460,104 +330,7 @@ def scrape_section(url, node_parent):
 
     
 
-# Needs to be updated for each jurisdiction
-def insert_jurisdiction_and_corpus_node():
-    jurisdiction_row_data = (
-        f"{JURISDICTION}/",
-        None,
-        "jurisdiction",
-        "STATE",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    corpus_row_data = (
-        f"{JURISDICTION}/statutes/",
-        None,
-        "corpus",
-        "CORPUS",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        f"{JURISDICTION}/",
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    insert_node_ignore_duplicate(jurisdiction_row_data)
-    insert_node_ignore_duplicate(corpus_row_data)
 
-def insert_node_ignore_duplicate(row_data, verbose=True):
-    try:
-        util.insert_row_to_local_db(, TABLE_NAME, row_data)
-    except psycopg2.errors.UniqueViolation as e:
-        if verbose:
-            print(f"** Inside insert_node_ignore_duplicate, ignoring the error: {e}")
-    return
-
-def insert_node_allow_duplicate(row_data, verbose=True):
-    node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, node_text, temp1, node_citation, node_link, node_addendum, node_name, temp2, temp3, temp4, temp5, temp6, node_parent, temp7, temp8, node_references, temp9, node_tags = row_data
-    node_data = (node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, node_references, None, node_tags)
-
-    base_node_id = node_id
-    
-    for i in range(2, 10):
-        try:
-            insert_node(node_data)
-            if verbose:
-                print(node_id)
-            break
-        except Exception as e:
-            if verbose:
-             print(f"** Inside insert_node_allow_duplicate, ignoring the error: {e}")
-            node_id = base_node_id + f"-v{i}"
-            if node_type != "content":
-                node_id += "/"
-                node_type = "structure_duplicate"
-            else:      
-                node_type = "content_duplicate"
-            node_data = (node_id, TOP_LEVEL_TITLE, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, node_references, None, node_tags)
-        continue
-
-def insert_node_skip_duplicate(row_data, verbose=True):
-    """
-    Insert a node, but skip it if it already exists. Returns True if skipped, False if inserted.
-    """
-    node_id = row_data[0]
-    try:
-        insert_node(row_data)
-        if verbose:
-            print(node_id)
-        return False
-    except:
-        if verbose:
-            print("** Inside insert_node_skip_duplicate, skipping:",node_id)
-        return True
-    
 
 
 
