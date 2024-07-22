@@ -108,7 +108,7 @@ def insert_node(node: Node, table_name: str, ignore_duplicate=False, debug_mode=
 
             else:
                 if debug_mode:
-                    print(f"Ignoring duplicate for: {node.node_id}")
+                    print(f"   **Ignoring duplicate")
 
                 break
     return node
