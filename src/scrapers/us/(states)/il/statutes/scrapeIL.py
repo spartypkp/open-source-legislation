@@ -62,21 +62,30 @@ def main():
 
 def scrape_toc_page(node_parent: Node):
     soup = get_url_as_soup(TOC_URL)
-    # Very complicated, sorry for this nesting
+    # Very complicated, sorry for this. Incredibly helpful for debugging purposes
     statutes_container = soup.find(id="toplinks")
     statutes_container = statutes_container.find("center")
     statutes_container = statutes_container.find("table")
-    statutes_container = statutes_container.find("tbody")
+    
+    
     statutes_container = statutes_container.find("tr")
     statutes_container = statutes_container.find_all("td")[1]
+    # I think this is a BS parse error <p> should not be nesting everything
+    all_p_tags = statutes_container.find_all("p")
+    for i, bad_p_tag in enumerate(all_p_tags):
+        bad_p_tag.unwrap()
+
     statutes_container = statutes_container.find("ul")
+   
 
     all_chapter_containers: List[Tag] = statutes_container.find_all(recursive=False)
+    
     current_category=""
+    nonBreakSpace = u'\xa0'
+
     for i, chapter_container in enumerate(all_chapter_containers):
         # P tags are empty, used for formatting
-        if chapter_container.name == "p":
-            continue
+        
         # Divs indicate categories for following nodes, mark for later
         if chapter_container.name == "div":
             current_category = chapter_container.get_text().strip()
@@ -90,7 +99,12 @@ def scrape_toc_page(node_parent: Node):
         parent = node_parent.node_id
         core_metadata = {"category": current_category}
         node_name = link_container.get_text().strip()
-        number = node_name.split(" ")[1]
+       
+        node_name = node_name.replace(nonBreakSpace, ' ')
+        # Stupid &nbsp
+        node_name_temp = node_name.replace("CHAPTER", "").strip()
+
+        number = node_name_temp.split(" ")[0]
         node_id = f"{parent}/chapter={number}"
 
         chapter_node = Node(
@@ -112,12 +126,34 @@ def scrape_toc_page(node_parent: Node):
 def scrape_acts(node_parent: Node):
     soup = get_url_as_soup(str(node_parent.link))
 
-    top_links = soup.find(id="top_links").parent
+    top_links = soup.find(id="toplinks").parent
+    top_links = top_links.find("table")
+    top_links = top_links.find("tr")
+    top_links = top_links.find_all("td")[1]
+    # I think this is a BS parse error <p> should not be nesting everything
+    all_p_tags = top_links.find_all("p")
+    for i, bad_p_tag in enumerate(all_p_tags):
+        bad_p_tag.unwrap()
+
+    all_br_tags = top_links.find_all("br")
+    for i, bad_br_tag in enumerate(all_br_tags):
+        bad_br_tag.decompose()
+
+    top_links = top_links.find("ul")
+    
+    
     # Again, sorry for the nesting. Blame Illinois.
-    all_act_containers: List[Tag] = top_links.find("table").find("tbody").find("tr").find_all("td")[1].find("ul")
+    all_act_containers: List[Tag] = top_links.find_all(recursive=False)
+    
+    nonBreakSpace = u'\xa0'
     current_category = ""
     for i, act_container in enumerate(all_act_containers):
-        if act_container.name == "p":
+        
+        # Bold indicates category heading
+        category_heading = act_container.find("b")
+       
+
+        if category_heading is not None:
             current_category = act_container.get_text().strip()
             continue
         link_container = act_container.find("a")
@@ -128,7 +164,10 @@ def scrape_acts(node_parent: Node):
         parent = node_parent.node_id
         core_metadata = {"category": current_category}
         node_name = link_container.get_text().strip()
-        number = node_name.split(" ")[1]
+        node_name = node_name.replace(nonBreakSpace, ' ')
+        
+        number = node_name.split("/")[0]
+        number = number.split(" ")[2]
         node_id = f"{parent}/act={number}"
 
         act_node = Node(
@@ -143,6 +182,11 @@ def scrape_acts(node_parent: Node):
             core_metadata=core_metadata
         )
         insert_node(act_node, TABLE_NAME, debug_mode=True)
+
+        article_soup = get_url_as_soup(link)
+        all_article_containers = article_soup.find_all(class_="indent-10")
+        for article_container in all_article_containers:
+            
         scrape_sections(act_node)
 
    
@@ -171,12 +215,16 @@ def scrape_acts(node_parent: Node):
 
 
 def scrape_sections(node_parent: Node):
-    soup = get_url_as_soup(str(node_parent.link))
+    
     
     section_titles: List[Tag] = soup.find_all("title")
+   
 
     for i, title_tag in enumerate(section_titles):
-      
+        # Skip chapter heading
+        if i == 0:
+            continue
+        
         citation = title_tag.get_text().strip()
    
         
@@ -191,7 +239,7 @@ def scrape_sections(node_parent: Node):
         section_paragraph_containers = node_text_container.find_all("code")
 
         node_text = NodeText()
-        addendum = Addendum(history=AddendumType(type="source", text=""))
+        addendum = Addendum(source=AddendumType(type="source", text=""))
         
 
 

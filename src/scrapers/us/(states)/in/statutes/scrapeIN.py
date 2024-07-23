@@ -1,47 +1,76 @@
-import psycopg2
 import os
-import urllib.request
-from bs4 import BeautifulSoup
 import sys
-import json
-DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import time
+from selenium.webdriver.remote.webelement import WebElement
 
- = "will2"
-TABLE_NAME = "in_node"
+from typing import List, Tuple
+import time
+import json
+import re
+
+from pathlib import Path
+
+DIR = os.path.dirname(os.path.realpath(__file__))
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
+
+
+
+COUNTRY = "us"
+# State code for states, 'federal' otherwise
+JURISDICTION = "in"
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://iga.in.gov"
 TOC_URL = "https://iga.in.gov/laws/2023/ic/titles/main"
-SKIP_TITLE = 2 # If you want to skip the first n titles, set this to n
+SKIP_TITLE = 0 
+# List of words that indicate a node is reserved
 RESERVED_KEYWORDS = ["Repealed", "Expired"]
-ALL_ELEMENTS = []
+DRIVER = None
 
 def main():
-    insert_jurisdiction_and_corpus_node()
-    scrape_titles()
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
+    scrape_toc_url(corpus_node)
         
 
-def scrape_titles():
-    global ALL_ELEMENTS
-    driver = webdriver.Chrome()
-    driver.get(TOC_URL)
-    driver.implicitly_wait(.5)
-    time.sleep(1.5)
+def scrape_toc_url(node_parent: Node):
+    
+    DRIVER = webdriver.Chrome()
+    DRIVER.get(TOC_URL)
     
     
-    og_parent = "in/statutes/"
-    nav_container = driver.find_element(By.ID, "indianaCodeSidenav")
+    
+    nav_container = DRIVER.find_element(By.ID, "indianaCodeSidenav")
     for i in range(len(nav_container.find_elements(By.XPATH, "./*"))):
         if i < SKIP_TITLE:
             continue
-        ALL_ELEMENTS = []
-        nav_container = driver.find_element(By.ID, "indianaCodeSidenav")
+        
+        nav_container = DRIVER.find_element(By.ID, "indianaCodeSidenav")
         title_selenium = nav_container.find_elements(By.XPATH, "./*")[i]
         title = BeautifulSoup(title_selenium.get_attribute('outerHTML'), features="html.parser")
     
@@ -52,43 +81,54 @@ def scrape_titles():
         
         
         top_level_title = node_name.split(" ")[1]
+        number = top_level_title
         if top_level_title[-1] == ".":
             top_level_title = top_level_title[:-1]
-        node_level_classifier = "TITLE"
+        level_classifier = "title"
         node_type = "structure"
-        node_link = f"https://iga.in.gov/laws/2023/ic/titles/{top_level_title}"
-        node_id = f"{og_parent}TITLE={top_level_title}/"
-        print(node_id)
-        title_node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, og_parent, None, None, None, None, None)
-        insert_node_ignore_duplicate(title_node_data)
+        link = f"https://iga.in.gov/laws/2023/ic/titles/{top_level_title}"
+        parent=node_parent.node_id
+        node_id = f"{parent}/title={top_level_title}"
+
+        title_node = Node(
+            id=node_id,
+            link=link,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            top_level_title=number,
+            parent=parent,
+        )
+        insert_node(title_node, TABLE_NAME, debug_mode=True)
         title_selenium.click()
         
-        scrape_article(driver, top_level_title, node_id, i)
+        scrape_article(title_node, i)
 
 
 
-def scrape_article(driver, top_level_title, node_parent, title_index):
+def scrape_article(node_parent: Node, title_index: int):
     
-    title_selenium = driver.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+    title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
     article_container = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU")
     
     if article_container is None:
         return
     for i in range(len(article_container.find_elements(By.XPATH, "./*"))):
-        title_selenium = driver.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+        title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
         article_container = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU")
         article_selenium = article_container.find_elements(By.XPATH, "./*")[i]
         article = BeautifulSoup(article_selenium.get_attribute('outerHTML'), features="html.parser")
         #print(article.prettify())
         article_button = article.find_all(recursive=False)[0]
         node_name = article_button.get_text().strip()
-        node_number = node_name.split(" ")[1]
-        if node_number[-1] == ".":
-            node_number = node_number[:-1]
-        node_level_classifier = "ARTICLE"
+        number = node_name.split(" ")[1]
+        if number[-1] == ".":
+            number = number[:-1]
+        level_classifier = "article"
         node_type = "structure"
-        node_link = f"https://iga.in.gov/laws/2023/ic/titles/{top_level_title}#{top_level_title}-{node_number}"
-        node_id = f"{node_parent}ARTICLE={node_number}/"
+        link = f"https://iga.in.gov/laws/2023/ic/titles/{node_parent.top_level_title}#{node_parent.top_level_title}-{number}"
+        node_id = f"{node_parent}/article={number}"
 
         for keyword in RESERVED_KEYWORDS:
             if keyword in node_name:

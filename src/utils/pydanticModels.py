@@ -843,7 +843,8 @@ ALLOWED_LEVELS = [
     "subject-group",
     "section",
     "appendix",
-    "hub"
+    "hub",
+    "act"
 ]
 
 if __name__ == "__main__":
