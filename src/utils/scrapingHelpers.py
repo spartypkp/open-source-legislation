@@ -5,13 +5,14 @@ from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_excep
 from urllib.error import URLError
 from src.utils import utilityFunctions as util
 from src.utils.pydanticModels import Node, NodeID
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from typing import Optional
 
 import requests
 from requests.exceptions import HTTPError, ConnectionError
 import time
+import re
 
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
@@ -190,3 +191,30 @@ def selenium_element_present(parent: WebElement, locator):
         return element if element else False
 
     return predicate
+
+
+def get_text_clean(element, direct_children_only=False):
+    '''
+    Get text from BeautifulSoup element, clean it, and return it.
+    element: BeautifulSoup element (Tag, NavigableString, etc.)
+    direct_children_only: If True, only get the text from the direct children of the element
+    '''
+    if element is None:
+        raise ValueError("==== Element is None in get_text_clean! ====")
+    
+    # Only allow the get_text() function if the element is a BS4 Tag
+    if not isinstance(element, Tag):
+        direct_children_only = True
+
+    # Get all direct children text, the XML way
+    if direct_children_only:
+        text = element.text.replace('\xa0', ' ').replace('\r', ' ').replace('\n', '').strip()
+    # Get all chidlren text, Soup function
+    else:
+        text = element.get_text().replace('\xa0', ' ').replace('\r', ' ').replace('\n', '').strip()
+    
+
+    # Remove all text inbetween < >, leftover XML/HTML elements
+    clean_text = re.sub('<.*?>', '', text)
+    clean_text = re.sub(r'\s+', ' ', clean_text)
+    return clean_text

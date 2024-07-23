@@ -58,8 +58,8 @@ BASE_URL = "https://www.akleg.gov"
 # The URL of the Table of Contents
 TOC_URL = "https://www.akleg.gov/basis/statutes.asp"
 # Start scraping at a specific top_level_title
-SKIP_TITLE = 6 # 0/47 titles
-RESERVED_KEYWORDS = ["[Repealed"]
+SKIP_TITLE = 2 # 0/47 titles
+RESERVED_KEYWORDS = {"[Repealed": "repealed", "[Renumbered": "renumbered"}
 
 # === Jurisdiction Specific Global Variables ===
 # Selenium Driver
@@ -77,13 +77,16 @@ def scrape_all_titles(corpus_node: Node):
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     DRIVER = webdriver.Chrome(options=chrome_options)
+    # In case visual debugging needed
+    # DRIVER = webdriver.Chrome()
+
     DRIVER.get(TOC_URL)
 
-    toc_nav_container = DRIVER.find_element(By.ID, "TOC_A")
+    toc_nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "TOC_A")))
     toc_nav_container.click()
 
     for i in range(SKIP_TITLE, 47):
-        titles_container = WebDriverWait(DRIVER, 20).until(selenium_element_present(DRIVER, (By.ID, "TitleToc")))
+        titles_container = WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "TitleToc")))
         all_titles = WebDriverWait(DRIVER, 20).until(selenium_elements_present(titles_container, (By.TAG_NAME, "li")))
 
         title_container = all_titles[i]
@@ -91,6 +94,7 @@ def scrape_all_titles(corpus_node: Node):
         title_a_tag = title_container.find_element(By.TAG_NAME, "a")
 
         title_name = title_a_tag.text.strip()
+        
         top_level_title = title_name.split(" ")[1]
 
         if top_level_title[-1] == ".":
@@ -156,9 +160,9 @@ def scrape_all_chapters(node_parent: Node):
         link = TOC_URL + "#" + citation
 
         status=None
-        for word in RESERVED_KEYWORDS:
+        for word, new_status in RESERVED_KEYWORDS.items():
             if word in chapter_name:      
-                status = "reserved"
+                status = new_status
                 break
 
         node_id = f"{node_parent.node_id}/{level_classifier}={chapter_number}"
@@ -179,8 +183,11 @@ def scrape_all_chapters(node_parent: Node):
         # If chapter is not reserved
         if not status:
             chapter_container.click()
-            
-            scrape_all_sections(chapter_node)
+            try:
+                scrape_all_sections(chapter_node)
+            except:
+                print("** FAILED SCRAPING SECTIONS! RETRYING!")
+                scrape_all_sections(chapter_node)
             chapter_return = DRIVER.find_element(By.ID, "partHead").find_element(By.TAG_NAME, "a")
             chapter_return.click()
             
@@ -217,10 +224,12 @@ def scrape_all_sections( node_parent: Node):
         addendum=None
         incoming_references=None
 
+       
+        
         status=None
-        for word in RESERVED_KEYWORDS:
-            if word in node_name:
-                status = "reserved"
+        for word, new_status in RESERVED_KEYWORDS.items():
+            if word in node_name:      
+                status = new_status
                 break
         
         # Don't process reserved section text/addendumn

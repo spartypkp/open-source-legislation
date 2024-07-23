@@ -104,13 +104,12 @@ def scrape_all_titles(node_parent: Node):
 
 
 def scrape_chapters(node_parent: Node):
-    print(str(node_parent.link))
     soup = get_url_as_soup(str(node_parent.link))
 
     statutes_container = soup.find("div", class_="statutesTOC")
 
     chapter_parent = statutes_container.find("ol", class_="chapter")
-    all_chapter_containers = chapter_parent.find_all("a")
+    all_chapter_containers: List[Tag] = chapter_parent.find_all("a")
     
 
     for i, chapter_container in enumerate(all_chapter_containers):
@@ -143,7 +142,7 @@ def scrape_chapters(node_parent: Node):
         chapter_node = Node(
             id=node_id, 
             link=link,
-            top_level_title=number, 
+            top_level_title=node_parent.top_level_title, 
             node_type=node_type, 
             level_classifier=level_classifier,
             number=number,
@@ -151,13 +150,61 @@ def scrape_chapters(node_parent: Node):
             parent=parent
             
         )
-        
         insert_node(chapter_node, TABLE_NAME, debug_mode=True)
-        find_section_links(chapter_node)
+
+        possible_part_parent = chapter_container.parent.find("ol", class_="part")
+        if possible_part_parent is not None:
+            scrape_parts(chapter_node, possible_part_parent)
+        else:
+            
+
+            find_section_links(chapter_node)
+
+
+def scrape_parts(node_parent: Node, soup: BeautifulSoup):
+    all_part_containers = soup.find_all("a")
+
+    for i, part_container in enumerate(all_part_containers):
+        href = part_container["href"]
+        link = f"{BASE_URL}/{href}"
+
+        part_spans = part_container.find_all("span")
+        number_span = part_spans[0]
+
+        node_name = number_span.get_text()
+        number = node_name.split(" ")[1]
+
+        level_classifier = "part"
+
+        description_span = part_spans[1]
+
+        node_name += " " + description_span.get_text()
+
+        section_span = part_spans[2]
+        core_metadata = {"sectionRange": section_span.get_text()}
+        node_type = "structure"
+
+        parent = node_parent.node_id
+        node_id = f"{parent}/{level_classifier}={number}"
+        part_node = Node(
+            id=node_id, 
+            link=link,
+            top_level_title=node_parent.top_level_title, 
+            node_type=node_type, 
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name, 
+            parent=parent,
+            core_metadata=core_metadata
+        )
+        insert_node(part_node, TABLE_NAME, debug_mode=True)
+        find_section_links(part_node)
+
+
 
 def find_section_links(node_parent: Node):
     soup = get_url_as_soup(str(node_parent.link))
-
+    
     section_parent = soup.find("div", class_="CatchlineIndex")
 
     all_section_containers = section_parent.find_all("a")
