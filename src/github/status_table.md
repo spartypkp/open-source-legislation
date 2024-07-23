@@ -14,9 +14,9 @@
 | us - United States | fl - Florida | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) |
 | us - United States | hi - Hawaii | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes) |
 | us - United States | ia - Iowa | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes) |
-| us - United States | id - Idaho | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) |
-| us - United States | il - Illinois | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes) |
-| us - United States | in - Indiana | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes) |
+| us - United States | id - Idaho | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) |
+| us - United States | il - Illinois | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/il/statutes) |
+| us - United States | in - Indiana | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/in/statutes) |
 | us - United States | ks - Kansas | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ks/statutes) |
 | us - United States | ky - Kentucky | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ky/statutes) |
 | us - United States | la - Louisianna | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/la/statutes) |

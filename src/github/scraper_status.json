@@ -189,7 +189,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/id/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
@@ -202,7 +202,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/il/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
@@ -215,7 +215,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/in/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"
