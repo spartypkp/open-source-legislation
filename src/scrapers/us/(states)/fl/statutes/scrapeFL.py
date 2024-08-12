@@ -76,6 +76,7 @@ def scrape_all_titles(node_parent: Node):
         node_name = number_span.get_text()
         number = node_name.split(" ")[1]
 
+
         level_classifier = "title"
 
         description_span = title_spans[1]
@@ -88,6 +89,11 @@ def scrape_all_titles(node_parent: Node):
 
         parent = node_parent.node_id
         node_id = f"{parent}/{level_classifier}={number}"
+        print(node_id)
+        if node_id == "us/fl/statutes/title=XXXIII":
+            exit(1)
+        else:
+            continue
         title_node = Node(
             id=node_id, 
             link=link,
