@@ -63,7 +63,7 @@ See more documentation in (TODO: Add link to documentation and write documentati
 | us - United States | federal - Federal Jurisdiction | Code of Federal Regulations - Electronic | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/ecfr) |
 | us - United States | federal - Federal Jurisdiction | US Code | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/usc) |
 | us - United States | federal - Federal Jurisdiction | Aeronautical Information Manual | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/federal/aim) |
-| us - United States | fl - Florida | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) |
+| us - United States | fl - Florida | Statutes | 🟢 | Complete | [download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/fl/statutes/us_fl_statutes.sql) |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/fl/statutes) |
 | us - United States | hi - Hawaii | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/hi/statutes) |
 | us - United States | ia - Iowa | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ia/statutes) |
 | us - United States | id - Idaho | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/id/statutes) |

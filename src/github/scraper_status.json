@@ -150,10 +150,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/fl/statutes",
-        "Status": "Testing",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/fl/statutes/us_fl_statutes.sql)"
     },
     {
         "Country": "us",

@@ -145,7 +145,8 @@ def recursive_scrape(node_parent: Node):
                 node_type=node_type,
                 node_name=node_name,
                 level_classifier=level_classifier,
-                top_level_title=node_parent.top_level_title
+                top_level_title=node_parent.top_level_title,
+                parent=parent
                 
             )
 
@@ -182,7 +183,8 @@ def recursive_scrape(node_parent: Node):
                 node_type=node_type,
                 node_name=node_name,
                 level_classifier=level_classifier,
-                top_level_title=node_parent.top_level_title
+                top_level_title=node_parent.top_level_title,
+                parent=parent
                 
             )
         insert_node(structure_node, TABLE_NAME, debug_mode=True)

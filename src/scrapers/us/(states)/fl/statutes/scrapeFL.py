@@ -89,11 +89,7 @@ def scrape_all_titles(node_parent: Node):
 
         parent = node_parent.node_id
         node_id = f"{parent}/{level_classifier}={number}"
-        print(node_id)
-        if node_id == "us/fl/statutes/title=XXXIII":
-            exit(1)
-        else:
-            continue
+       
         title_node = Node(
             id=node_id, 
             link=link,
@@ -107,6 +103,8 @@ def scrape_all_titles(node_parent: Node):
         )
         insert_node(title_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
         scrape_chapters(title_node)
+            
+        
 
 
 def scrape_chapters(node_parent: Node):
@@ -120,9 +118,10 @@ def scrape_chapters(node_parent: Node):
 
     for i, chapter_container in enumerate(all_chapter_containers):
         
-        
-
         href = chapter_container["href"]
+        # Avoid incorrectly processing Parts as Chapters. Should have previously been scraped by scrape_parts
+        if "Part" in href:
+            continue
         link = f"{BASE_URL}/{href}"
 
         chapter_spans = chapter_container.find_all("span")
@@ -289,19 +288,6 @@ def scrape_section(node_parent: Node, link: str):
         
     insert_node(section_node, TABLE_NAME, debug_mode=True)
     
-
-
-
-
-
-
-
-
-
-    
-
-
-  
 
 if __name__ == "__main__":
      main() 
