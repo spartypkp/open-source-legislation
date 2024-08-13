@@ -34,7 +34,7 @@ project_root = src_directory.parent
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
-from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms, ALLOWED_LEVELS
 from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
 
 
@@ -49,7 +49,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://legislature.idaho.gov"
 TOC_URL =  "https://legislature.idaho.gov/statutesrules/idstat/"
-SKIP_TITLE = 0 
+SKIP_TITLE = 39
 RESERVED_KEYWORDS = []
 
 
@@ -157,8 +157,13 @@ def recursive_scrape(node_parent: Node):
         try:
             node_name_start  = link_container.get_text()
             level_classifier = node_name_start.split(" ")[0].lower()
-            number  = node_name_start.split(" ")[1]
-            number = number.replace(".","")
+            # Handle weird cases. See us/id/statutes/title=40/chapter=16, considering this an article
+            if level_classifier not in ALLOWED_LEVELS:
+                level_classifier = "article"
+                number = node_name_start
+            else:
+                number  = node_name_start.split(" ")[1]
+                number = number.replace(".","")
             if "[" in node_name_start and "]" in node_name_start:
                 # Set the node number to the number in the brackets
                 number = node_name_start.split("[")[1].split("]")[0]
@@ -187,6 +192,7 @@ def recursive_scrape(node_parent: Node):
                 parent=parent
                 
             )
+        
         insert_node(structure_node, TABLE_NAME, debug_mode=True)
         if not status:
             recursive_scrape(structure_node)

@@ -185,9 +185,27 @@ def scrape_acts(node_parent: Node):
 
         article_soup = get_url_as_soup(link)
         all_article_containers = article_soup.find_all(class_="indent-10")
-        for article_container in all_article_containers:
-            
-        scrape_sections(act_node)
+        print(len(all_article_containers))
+        if len(all_article_containers) == 0:
+            scrape_sections(act_node, article_soup)
+        else:
+            for article_container in all_article_containers:
+                node_type = "structure"
+                node_level_classifier = "article"
+                
+
+                node_name = article_name
+                node_number = article_name.split(" ")[1]
+                node_link = url
+                node_id = f"{node_parent}{node_level_classifier}={node_number}/"
+                node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
+                insert_node_ignore_duplicate(node_data)
+                section_node_parent = node_id
+
+                section_header = soup.find("div", class_="heading")
+                section_container = section_header.find_next_sibling("p")
+                scrape_sections(node_link, section_container, top_level_title, section_node_parent)
+            scrape_sections(act_node)
 
    
 
@@ -214,7 +232,7 @@ def scrape_acts(node_parent: Node):
 
 
 
-def scrape_sections(node_parent: Node):
+def scrape_sections(node_parent: Node, soup: BeautifulSoup):
     
     
     section_titles: List[Tag] = soup.find_all("title")

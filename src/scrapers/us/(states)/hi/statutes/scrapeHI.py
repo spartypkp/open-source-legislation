@@ -99,8 +99,6 @@ def scrape_chapter(node_parent: Node, url: str):
     node_type="structure"
     link=url
     
-    
-
     for i, structure_container in enumerate(structure_containers):
         node_name = structure_container.get_text().strip()
         print(node_name)
@@ -109,7 +107,12 @@ def scrape_chapter(node_parent: Node, url: str):
             number_text = node_name.replace("DIVISION","").strip()
             number = number_text.split(" ")[0]
             number=number.rstrip(".")
-            division_parent=node_parent.node_id
+            true_parent = node_parent.id.search_for_parent_level(level_classifier)
+            if true_parent:
+                division_parent = NodeID(raw_id=true_parent).pop_level()
+                division_parent = f"{division_parent.raw_id}/division={number}"
+            else:
+                division_parent=node_parent.node_id
             division_node_id = f"{division_parent}/division={number}"
             division_node = Node(
                 id=division_node_id,
@@ -142,6 +145,25 @@ def scrape_chapter(node_parent: Node, url: str):
             )
             insert_node(title_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
             node_parent=title_node
+        elif "SUBTITLE" in node_name:
+            level_classifier="subtitle"
+            number_text = node_name.replace("SUBTITLE","").strip()
+            number = number_text.split(" ")[0]
+            number=number.rstrip(".")
+            subtitle_parent=node_parent.node_id
+            subtitle_node_id = f"{title_parent}/subtitle={number}"
+            subtitle_node = Node(
+                id=subtitle_node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=subtitle_parent
+            )
+            insert_node(subtitle_node, TABLE_NAME, ignore_duplicate=True, debug_mode=True)
+            node_parent=subtitle_node
         elif "CHAPTER" in node_name:
             level_classifier="chapter"
             number_text = node_name.replace("CHAPTER","").strip()
@@ -160,7 +182,6 @@ def scrape_chapter(node_parent: Node, url: str):
                 parent=chapter_parent
             )
            
-            node_parent=chapter_node
         else:
             if node_name == "":
                 continue
@@ -178,6 +199,8 @@ def scrape_chapter(node_parent: Node, url: str):
             continue
         href=f"{BASE_URL}{a_tag['href']}"
         scrape_section(href, chapter_node)
+    
+    return node_parent
 
 
 
