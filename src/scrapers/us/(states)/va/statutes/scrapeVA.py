@@ -91,23 +91,59 @@ def scrape_toc(node_parent: Node):
             parent=parent
         )
         insert_node(title_node, TABLE_NAME, debug_mode=True)
-        scrape_chapters(title_soup, title_node)
+        recursive_scrape(title_container, title_node)
+
+
+
+
+def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
+    print(soup.prettify())
+
+    if soup.find("dl", recursive=False):
+        print("Scraping chapters!")
+        scrape_chapters(soup, node_parent)
+        print(exit(1))
+    else:
+        print("Recursive scraping!")
+        print(exit(1))
+        
+        all_containers = soup.find_all("ul", class_="outline")
+        
+        node_type = "structure"
+        parent = node_parent.node_id
+        status = None
+        core_metadata = None
+        
+        for i, container in enumerate(all_containers):
+            node_name_container = container.find("b")
+            node_name = node_name_container.get_text().strip()
+            level_classifier = node_name.split(" ")[0].lower()
+            number = node_name.split(" ")[1]
+            if number[-1] == ".":
+                number = number[:-1]
+            node_id = f"{node_parent.node_id}/{level_classifier}={number}"
+            structure_node = Node(
+                id=node_id,
+                link=str(node_parent.link),
+                level_classifier=level_classifier,
+                node_type=node_type,
+                parent=parent,
+                status=status,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title
+            )
+            insert_node(structure_node, TABLE_NAME, debug_mode=True) 
+            recursive_scrape(container, structure_node)
 
 
 
 
 def scrape_chapters(soup: BeautifulSoup, node_parent: Node):
-    
-    all_chapters_container = soup.find(class_="number-descrip-list")
-    chapters_containers = all_chapters_container.find_all(recursive=False)
-
-    node_name = ""
+    all_containers = soup.find("dl").find_all(recursive=False)
+    level_classifier = "chapter"
     node_type = "structure"
     parent = node_parent.node_id
-    status = None
-    core_metadata = None
-    
-    for i, container in enumerate(chapters_containers):
+    for i, container in enumerate(all_containers):
         # Even index is link: level classifier and number
         if i % 2 == 0:
             status = None
@@ -151,85 +187,118 @@ def scrape_sections(node_parent: Node):
 
     
     soup = get_url_as_soup(str(node_parent.link))
-    print(soup.prettify())
+    
 
     level_classifier = "section"
     node_type = "content"
     
     parent = node_parent.node_id
+
+
     
 
-    sections_container = soup.find(class_="number-descrip-list")
-    all_sections = sections_container.find_all("a")
-    for i, section_a_tag in enumerate(all_sections):
+    content = soup.find(id="va_code")
+    
+    all_containers: List[Tag] = content.find_all(["b", "dl"])
+    
+    for i, container in enumerate(all_containers):
         status=None
         processing = None
-
-        href = section_a_tag['href']
-        link = f"{BASE_URL}{href}"
-        section_soup = get_url_as_soup(link)
-        section_content = section_soup.find(class_="va_code")
-        node_name_container = section_content.find("h2")
-        node_name = node_name_container.get_text()
-        number = node_name.split(" ")[1]
-
-        if number[-1] == ".":
-            number = number[:-1]
-        citation = f"Va. Code Ann. § {number}"
-
-        node_id = f"{parent}/section={number}"
-        section_text_container = section_content.find("section")
-        all_p_tags = section_text_container.find_all(recursive=False)
-        node_text = NodeText()
-        addendum = Addendum()
+       
         
 
-        for i, p_tag in enumerate(all_p_tags):
-            references = ReferenceHub()
+        # Indicates article
+        if container.name == "b":
+            article_name = container.get_text()
+            article_number = article_name.split(" ")[1]
+            if article_number[-1] == ".":
+                article_number = article_number[:-1]
+            article_node_id = f"{node_parent.node_id}/article={article_number}"
+            article_node = Node(
+                id=article_node_id,
+                link=node_parent.link,
+                top_level_title=node_parent.top_level_title,
+                number=article_number,
+                node_type="structure",
+                node_name=article_name,
+                parent=node_parent.node_id,
+                level_classifier="article"
+            )
+            insert_node(article_node, TABLE_NAME, debug_mode=True)
+            parent=article_node.node_id
+            continue
+        for i, section_a_tag in enumerate(container.find_all("a")):
+        
+            href = section_a_tag['href']
+            link = f"{BASE_URL}{href}"
+            
+            section_soup = get_url_as_soup(link)
+        
+            
+            section_content = section_soup.find(id="va_code")
+            
+            node_name_container = section_content.find("h2")
+            node_name = node_name_container.get_text().strip()
+            
+            number = node_name.split(" ")[1]
 
-            text = p_tag.get_text()
+            if number[-1] == ".":
+                number = number[:-1]
+            citation = f"Va. Code Ann. § {number}"
 
-            all_a_tags = p_tag.find_all("a")
-            for i, a_tag in enumerate(all_a_tags):
-                ref_href = a_tag['href']
-                corpus=None
-                # Indicates from the virginia code
-                if "/vacode" in ref_href:
-                    ref_link = f"{BASE_URL}{ref_href}"
-                # Indicates another corpus
+            node_id = f"{parent}/section={number}"
+            section_text_container = section_content.find("section")
+            all_p_tags = section_text_container.find_all(recursive=False)
+            node_text = NodeText()
+            addendum = Addendum()
+            
+
+            for i, p_tag in enumerate(all_p_tags):
+                references = ReferenceHub()
+
+                text = p_tag.get_text()
+
+                all_a_tags = p_tag.find_all("a")
+                for i, a_tag in enumerate(all_a_tags):
+                    ref_href = a_tag['href']
+                    corpus=None
+                    # Indicates from the virginia code
+                    if "/vacode" in ref_href:
+                        ref_link = f"{BASE_URL}{ref_href}"
+                    # Indicates another corpus
+                    else:
+                        if processing is None:
+                            processing = {}
+                        ref_link = ref_href
+                        processing["unknown_reference_corpus_in_node_text"] = True
+                        
+                    reference = Reference(text=a_tag.get_text())
+                    references.references[ref_link] = reference
+                # Remove empty reference hub
+                if references.references == {}:
+                    references = None
+                # Ensure last paragraph is always added as the addendum
+                if i == len(all_p_tags)-1:
+                    addendum.history = AddendumType(text=text, reference_hub=references)
                 else:
-                    if processing is None:
-                        processing = {}
-                    ref_link = ref_href
-                    processing["unknown_reference_corpus_in_node_text"] = True
-                    
-                reference = Reference(text=a_tag.get_text())
-                references.references[ref_link] = reference
-            # Remove empty reference hub
-            if references.references == {}:
-                references = None
-            # Ensure last paragraph is always added as the addendum
-            if i == len(all_p_tags)-1:
-                addendum.history = AddendumType(text=text, reference_hub=references)
-            else:
-                node_text.add_paragraph(text=text, reference_hub=references)
-        
-        section_node = Node(
-            id=node_id,
-            link=link,
-            citation=citation,
-            node_type=node_type,
-            level_classifier=level_classifier,
-            number=number,
-            node_name=node_name,
-            status=status,
-            top_level_title=node_parent.top_level_title,
-            parent=parent,
-            node_text=node_text,
-            addendum=addendum,
-            processing=processing
-        )
-        insert_node(section_node, TABLE_NAME, debug_mode=True)
+                    node_text.add_paragraph(text=text, reference_hub=references)
+            
+            section_node = Node(
+                id=node_id,
+                link=link,
+                citation=citation,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                status=status,
+                top_level_title=node_parent.top_level_title,
+                parent=parent,
+                node_text=node_text,
+                addendum=addendum,
+                processing=processing
+            )
+            insert_node(section_node, TABLE_NAME, debug_mode=True)
 
 
 if __name__ == "__main__":
