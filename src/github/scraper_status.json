@@ -535,6 +535,19 @@
     {
         "Country": "us",
         "Country_description": "United States",
+        "Jurisdiction": "va",
+        "Jurisdiction_description": "Virginia",
+        "Corpus": "statutes",
+        "Corpus_description": "Statutes",
+        "FilePath": "src/scrapers/us/(states)/va/statutes",
+        "Status": "Testing",
+        "DevComment": "Major Overhaul WIP",
+        "LastUpdated": "2024-07-18T14:53:05.618081",
+        "DownloadLink": "N/A"
+    },
+    {
+        "Country": "us",
+        "Country_description": "United States",
         "Jurisdiction": "vt",
         "Jurisdiction_description": "Vermont",
         "Corpus": "statutes",

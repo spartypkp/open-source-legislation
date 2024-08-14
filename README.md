@@ -93,6 +93,7 @@ See more documentation in (TODO: Add link to documentation and write documentati
 | us - United States | sd - South Dakota | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/sd/statutes) |
 | us - United States | tx - Texas | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/tx/statutes) |
 | us - United States | ut - Utah | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/ut/statutes) |
+| us - United States | va - Virginia | Statutes | 🟡 | Testing | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/va/statutes) |
 | us - United States | vt - Vermont | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/vt/statutes) |
 | us - United States | wa - Washington | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wa/statutes) |
 | us - United States | wi - Wisconsin | Statutes | 🟠 | Refactoring | N/A |  [view](https://github.com/spartypkp/open-source-legislation/blob/main/src/scrapers/us/(states)/wi/statutes) |
