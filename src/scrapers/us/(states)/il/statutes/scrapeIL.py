@@ -50,8 +50,6 @@ TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://www.ilga.gov/legislation/ilcs/"
 ARTICLE_BASE_URL = "https://www.ilga.gov"
 TOC_URL = "https://www.ilga.gov/legislation/ilcs/ilcs.asp"
-SKIP_TITLE = 0 
-RESERVED_KEYWORDS = []
 # List of words that indicate a node is reserved
 RESERVED_KEYWORDS = ["Repealed"]
 
@@ -184,27 +182,33 @@ def scrape_acts(node_parent: Node):
         insert_node(act_node, TABLE_NAME, debug_mode=True)
 
         article_soup = get_url_as_soup(link)
-        all_article_containers = article_soup.find_all(class_="indent-10")
+        all_article_containers: List[Tag] = article_soup.find_all(class_="indent-10")
         print(len(all_article_containers))
         if len(all_article_containers) == 0:
             scrape_sections(act_node, article_soup)
         else:
+            
             for article_container in all_article_containers:
                 node_type = "structure"
-                node_level_classifier = "article"
+                level_classifier = "article"
                 
 
-                node_name = article_name
-                node_number = article_name.split(" ")[1]
-                node_link = url
-                node_id = f"{node_parent}{node_level_classifier}={node_number}/"
-                node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-                insert_node_ignore_duplicate(node_data)
-                section_node_parent = node_id
-
-                section_header = soup.find("div", class_="heading")
-                section_container = section_header.find_next_sibling("p")
-                scrape_sections(node_link, section_container, top_level_title, section_node_parent)
+                node_name = article_container.get_text()
+                number = node_name.split(" ")[1]
+                article_parent = act_node.node_id
+                article_node_id = f"{article_parent}/{level_classifier}={number}"
+                act_node = Node(
+                    id=article_node_id,
+                    link=link,
+                    node_type=node_type,
+                    level_classifier=level_classifier,
+                    number=number,
+                    node_name=node_name,
+                    top_level_title=node_parent.top_level_title,
+                    parent=article_parent,
+                )
+                insert_node(act_node, TABLE_NAME, debug_mode=True)
+            exit(1)
             scrape_sections(act_node)
 
    

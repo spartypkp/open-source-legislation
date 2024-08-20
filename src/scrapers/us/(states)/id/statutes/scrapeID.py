@@ -49,7 +49,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://legislature.idaho.gov"
 TOC_URL =  "https://legislature.idaho.gov/statutesrules/idstat/"
-SKIP_TITLE = 39
+SKIP_TITLE = 40
 RESERVED_KEYWORDS = []
 
 

@@ -70,9 +70,9 @@ def scrape_toc(node_parent: Node):
         title_container = title_soup.find(id="va_code")
         node_name_container = title_container.find("h2")
         node_name = node_name_container.get_text().replace("Read Title ", "").strip()
-        print(node_name)
+        
         number = node_name.split(" ")[1]
-        print(number)
+       
         if number[-1] == ".":
             number = number[:-1]
         
@@ -97,17 +97,13 @@ def scrape_toc(node_parent: Node):
 
 
 def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
-    print(soup.prettify())
-
+    print(soup.find("dl", recursive=False) is not None)
     if soup.find("dl", recursive=False):
-        print("Scraping chapters!")
         scrape_chapters(soup, node_parent)
-        print(exit(1))
     else:
-        print("Recursive scraping!")
-        print(exit(1))
         
-        all_containers = soup.find_all("ul", class_="outline")
+        
+        all_containers = soup.find_all("ul", class_="outline", recursive=False)
         
         node_type = "structure"
         parent = node_parent.node_id
@@ -187,15 +183,9 @@ def scrape_sections(node_parent: Node):
 
     
     soup = get_url_as_soup(str(node_parent.link))
-    
-
     level_classifier = "section"
-    node_type = "content"
-    
+    node_type = "content"   
     parent = node_parent.node_id
-
-
-    
 
     content = soup.find(id="va_code")
     
@@ -249,17 +239,20 @@ def scrape_sections(node_parent: Node):
             node_id = f"{parent}/section={number}"
             section_text_container = section_content.find("section")
             all_p_tags = section_text_container.find_all(recursive=False)
+            
             node_text = NodeText()
             addendum = Addendum()
             
 
             for i, p_tag in enumerate(all_p_tags):
+                # print(i)
+                # print(p_tag.prettify())
                 references = ReferenceHub()
 
                 text = p_tag.get_text()
 
                 all_a_tags = p_tag.find_all("a")
-                for i, a_tag in enumerate(all_a_tags):
+                for j, a_tag in enumerate(all_a_tags):
                     ref_href = a_tag['href']
                     corpus=None
                     # Indicates from the virginia code
@@ -270,19 +263,23 @@ def scrape_sections(node_parent: Node):
                         if processing is None:
                             processing = {}
                         ref_link = ref_href
-                        processing["unknown_reference_corpus_in_node_text"] = True
+                        if i != len(all_p_tags)-1:
+                            processing["unknown_reference_corpus_in_node_text"] = True
                         
                     reference = Reference(text=a_tag.get_text())
                     references.references[ref_link] = reference
                 # Remove empty reference hub
                 if references.references == {}:
                     references = None
+                # print(f"I: {i}, len(all_p_tags): {len(all_p_tags)}")
+                # print(i == len(all_p_tags)-1)
                 # Ensure last paragraph is always added as the addendum
                 if i == len(all_p_tags)-1:
                     addendum.history = AddendumType(text=text, reference_hub=references)
                 else:
                     node_text.add_paragraph(text=text, reference_hub=references)
-            
+            if processing == {}:
+                processing = None
             section_node = Node(
                 id=node_id,
                 link=link,
