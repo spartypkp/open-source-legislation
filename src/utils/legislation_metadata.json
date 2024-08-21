@@ -151,8 +151,8 @@
         "id": {
             "description": "Idaho",
             "statutes": {
-                "download_link_available": false,
-                "status": "Testing",
+                "download_link_available": true,
+                "status": "Complete",
                 "status_description": "Major Overhaul WIP",
                 "last_updated": "2024-07-18T14:53:05.618081",
                 "description": "Statutes",

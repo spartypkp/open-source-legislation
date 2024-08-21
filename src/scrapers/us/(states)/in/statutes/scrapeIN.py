@@ -60,11 +60,7 @@ SKIP_TITLE = 0
 # List of words that indicate a node is reserved
 RESERVED_KEYWORDS = ["Repealed", "Expired"]
 
-
-# chrome_options = Options()
-# chrome_options.add_argument("--headless=new")
-# DRIVER = webdriver.Chrome(options=chrome_options)
-
+# DRIVER = None
 DRIVER = webdriver.Chrome()
 
 # Don't touch this voodoo bullshit i made half a year ago
@@ -76,7 +72,10 @@ def main():
         
 
 def scrape_toc_url(node_parent: Node):
-    
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless=new")
+    # DRIVER = webdriver.Chrome(options=chrome_options)
+
     DRIVER.get(TOC_URL)
     
     nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
@@ -291,7 +290,11 @@ def scrape_section(node_parent: Node, title_index: int, article_index: int, chap
         if ALL_ELEMENTS == []:
 
             section_selenium.click()
-            selenium_root = DRIVER.find_element(By.ID, "main-container").find_element(By.CLASS_NAME, "SideNavLayout_mainContent__1UpKd").find_element(By.CLASS_NAME, "IndianaCode_titleContent__1tjom")
+            selenium_root = DRIVER.find_element(By.ID, "main-container").find_element(By.CLASS_NAME, "SideNavLayout_mainContent__1UpKd")
+            # .find_element(By.CLASS_NAME, "IndianaCode_titleContent__1tjom")
+            
+            selenium_root =  WebDriverWait(DRIVER, 5).until(selenium_element_present(selenium_root, (By.CLASS_NAME, "IndianaCode_titleContent__1tjom")))
+            
             #print(selenium_root.get_attribute('outerHTML'))
             shadow_root = selenium_root.shadow_root
             

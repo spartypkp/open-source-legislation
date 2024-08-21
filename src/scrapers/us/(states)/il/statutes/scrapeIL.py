@@ -189,7 +189,7 @@ def scrape_acts(node_parent: Node):
             level_classifier=level_classifier,
             number=number,
             node_name=node_name,
-            top_level_title=number,
+            top_level_title=node_parent.top_level_title,
             parent=parent,
             core_metadata=core_metadata,
             status=status
@@ -217,7 +217,7 @@ def scrape_acts(node_parent: Node):
                 number = node_name.split(" ")[1]
                 article_parent = act_node.node_id
                 article_node_id = f"{article_parent}/{level_classifier}={number}"
-                act_node = Node(
+                article_node = Node(
                     id=article_node_id,
                     link=link,
                     node_type=node_type,
@@ -225,9 +225,9 @@ def scrape_acts(node_parent: Node):
                     number=number,
                     node_name=node_name,
                     top_level_title=node_parent.top_level_title,
-                    parent=article_parent,
+                    parent=article_parent
                 )
-                insert_node(act_node, TABLE_NAME, debug_mode=True)
+                insert_node(article_node, TABLE_NAME, debug_mode=True)
             exit(1)
             scrape_sections(act_node)
 
@@ -257,60 +257,141 @@ def scrape_acts(node_parent: Node):
 
 
 def scrape_sections(node_parent: Node, soup: BeautifulSoup):
-    
+    nonBreakSpace = u'\xa0'
     
     section_titles: List[Tag] = soup.find_all("title")
+    section_parent = node_parent.node_id
+    link = str(node_parent.link)
    
 
     for i, title_tag in enumerate(section_titles):
         # Skip chapter heading
         if i == 0:
             continue
-        
+
         citation = title_tag.get_text().strip()
-   
-        
         number = citation.split("/")[-1].rstrip(".")
-        node_type = "content"
-        level_classifier = "section"
-        parent=node_parent.node_id
-        node_id = f"{parent}/{level_classifier}={number}"
-        
         node_text_container = title_tag.find_next("table")
         
-        section_paragraph_containers = node_text_container.find_all("code")
 
-        node_text = NodeText()
-        addendum = Addendum(source=AddendumType(type="source", text=""))
-        
+        if "Art. " in number:
+            # Article Stuff
+            node_type = "structure"
+            level_classifier = "article"
 
+            article_addendum = Addendum(source=AddendumType(type="source", text=""))
 
-        for i, paragraph_container in enumerate(section_paragraph_containers):
-            text = paragraph_container.get_text().strip()
-            if text != "":
+            article_paragraph_containers = node_text_container.find_all("code")
+            valid_article_containers = 0
+            for i, paragraph_container in enumerate(article_paragraph_containers):
+                text = paragraph_container.get_text().strip().replace(nonBreakSpace, "")
+                # Skip empty <code> blocks
+                if text == "":
+                    continue
+                # 0 - citation
+                if valid_article_containers == 0:
+                    valid_article_containers += 1
+                    continue
+               
+                # 1 & 2 - node_name
+                if valid_article_containers == 1 or valid_article_containers == 2:
+                    node_name += text
+                    valid_article_containers += 1
+                    continue
+
+                 # 3 - addendum source
+                if valid_article_containers == 1:
+                    article_addendum.source.text = text
+                    valid_article_containers += 1
+                    continue
                 
+            
+            number = node_name.split(" ")[1]
+            if number[-1] == ".":
+                number = number[:-1]
+
+            article_parent = node_parent.node_id
+            article_node_id = f"{article_parent}/{level_classifier}={number}"
+            article_node = Node(
+                id=article_node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=article_parent,
+                citation=citation,
+                addendum=article_addendum
+            )
+            insert_node(article_node, TABLE_NAME, debug_mode=True)
+            section_parent = node_id
+        ## 
+        else:
+
+        
+            node_type = "content"
+            level_classifier = "section"
+            node_id = f"{section_parent}/{level_classifier}={number}"
+            
+            
+            
+            # Needs testing
+            node_name = ""
+
+            node_text = NodeText()
+            addendum = Addendum(source=AddendumType(type="source", text=""), history=AddendumType(type="history", text=""))
+            
+            section_paragraph_containers = node_text_container.find_all("code")
+            
+
+            
+            valid_containers = 0
+            for i, paragraph_container in enumerate(section_paragraph_containers):
+                text = paragraph_container.get_text().strip().replace(nonBreakSpace, "")
+                
+                # Skip empty <code> blocks
+                if text == "":
+                    
+                    continue
+                # 0 - citation
+                if valid_containers == 0:
+                    valid_containers += 1
+                    continue
+                # 1 - addendum history
+                if valid_containers == 1:
+                    addendum.history.text = text
+                    valid_containers += 1
+                    continue
+                # 2 & 3 - node_name
+                if valid_containers == 3 or valid_containers == 4:
+                    node_name += text
+                    valid_containers += 1
+                    continue
+                
+                # Rest of paragraphs
                 if "(Source:" in text:
                     addendum.source.text += text
                 else:
                     node_text.add_paragraph(text=text)
-               
-        status = None
-        node_name = f"Section {number}"
-        
-        section_node = Node(
-            id=node_id,
-            link=node_parent.link,
-            citation=citation,
-            node_type=node_type,
-            level_classifier=level_classifier,
-            number=number,
-            node_name=node_name,
-            node_text=node_text,
-            addendum=addendum,
-            parent=parent,
-            status=status
-        )
-        insert_node(section_node, TABLE_NAME, debug_mode=True)
+                
+            status = None
+            
+            section_node = Node(
+                id=node_id,
+                link=link,
+                citation=citation,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                node_text=node_text,
+                addendum=addendum,
+                top_level_title=node_parent.top_level_title,
+                parent=section_parent,
+                status=status
+            )
+            insert_node(section_node, TABLE_NAME, debug_mode=True)
         
 
 if __name__ == "__main__":

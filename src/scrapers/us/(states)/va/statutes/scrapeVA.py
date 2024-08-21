@@ -63,6 +63,9 @@ def scrape_toc(node_parent: Node):
     all_titles_container = soup.find(class_="number-descrip-list")
     all_titles = all_titles_container.find_all("a")
     for i, title_container in enumerate(all_titles):
+        if i < SKIP_TITLE:
+            continue
+
         href = title_container['href']
         link = f"{BASE_URL}{href}"
         title_soup = get_url_as_soup(link)
@@ -96,7 +99,6 @@ def scrape_toc(node_parent: Node):
 
 
 def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
-    print(soup.find("dl", recursive=False) is not None)
     if soup.find("dl", recursive=False):
         scrape_chapters(soup, node_parent)
     else:
@@ -148,6 +150,14 @@ def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
 
 def scrape_chapters(soup: BeautifulSoup, node_parent: Node):
     all_containers = soup.find("dl").find_all(recursive=False)
+
+    # Check that the Title doesn't directly lead to sections. Skip directly to section scraping
+    # See https://law.lis.virginia.gov/vacode/title8.5A/
+    first_link_container =  all_containers[0].find("a")
+    if "/section" in first_link_container['href']:
+        scrape_sections(node_parent)
+        return
+
     level_classifier = "chapter"
     node_type = "structure"
     parent = node_parent.node_id
@@ -160,6 +170,14 @@ def scrape_chapters(soup: BeautifulSoup, node_parent: Node):
             href = link_container['href']
             link = f"{BASE_URL}{href}"
             link_text = link_container.get_text()
+
+            # Example where direct skipping to sections is needed https://law.lis.virginia.gov/vacode/title8.1A/
+            if link_text.strip() == "Sections":
+                copy = node_parent.model_copy()
+                copy.link = link
+                scrape_sections(copy)
+                break
+
             level_classifier = link_text.split(" ")[0].lower()
             number = link_text.split(" ")[1]
             node_id = f"{parent}/{level_classifier}={number}"
@@ -207,8 +225,6 @@ def scrape_sections(node_parent: Node):
         status=None
         processing = None
        
-        
-
         # Indicates article
         if container.name == "b":
             article_name = container.get_text()
