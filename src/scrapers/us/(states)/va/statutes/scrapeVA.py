@@ -219,7 +219,7 @@ def scrape_sections(node_parent: Node):
 
             article_status = None
             for word in RESERVED_KEYWORDS:
-                if word in node_name:
+                if word in article_name:
                     article_status = "reserved"
                     break
 

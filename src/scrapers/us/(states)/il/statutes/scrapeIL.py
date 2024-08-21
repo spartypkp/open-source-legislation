@@ -197,7 +197,7 @@ def scrape_acts(node_parent: Node):
         insert_node(act_node, TABLE_NAME, debug_mode=True)
 
         # Simply continue when repealed acts occurr
-        if not status:
+        if status:
             continue
 
         article_soup = get_url_as_soup(link)

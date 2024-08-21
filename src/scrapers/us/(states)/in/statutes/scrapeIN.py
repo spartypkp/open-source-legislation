@@ -4,14 +4,22 @@ import sys
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-# Selenium imports
+
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.chrome.options import Options
+
+
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
 
 from typing import List, Tuple
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
 import time
 import json
 import re
@@ -35,7 +43,7 @@ if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
 from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms
-from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, selenium_element_present, selenium_elements_present
 
 
 
@@ -51,7 +59,16 @@ TOC_URL = "https://iga.in.gov/laws/2023/ic/titles/main"
 SKIP_TITLE = 0 
 # List of words that indicate a node is reserved
 RESERVED_KEYWORDS = ["Repealed", "Expired"]
+
+
+# chrome_options = Options()
+# chrome_options.add_argument("--headless=new")
+# DRIVER = webdriver.Chrome(options=chrome_options)
+
 DRIVER = webdriver.Chrome()
+
+# Don't touch this voodoo bullshit i made half a year ago
+ALL_ELEMENTS = []
 
 def main():
     corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
@@ -62,12 +79,13 @@ def scrape_toc_url(node_parent: Node):
     
     DRIVER.get(TOC_URL)
     
-    nav_container = DRIVER.find_element(By.ID, "indianaCodeSidenav")
+    nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
+    
     for i in range(len(nav_container.find_elements(By.XPATH, "./*"))):
         if i < SKIP_TITLE:
             continue
         
-        nav_container = DRIVER.find_element(By.ID, "indianaCodeSidenav")
+        nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
         title_selenium = nav_container.find_elements(By.XPATH, "./*")[i]
         title = BeautifulSoup(title_selenium.get_attribute('outerHTML'), features="html.parser")
     
@@ -105,14 +123,15 @@ def scrape_toc_url(node_parent: Node):
 
 
 def scrape_article(node_parent: Node, title_index: int):
-    
-    title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+    nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
+    title_selenium = nav_container.find_elements(By.XPATH, "./*")[title_index]
     article_container = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU")
     
     if article_container is None:
         return
     for i in range(len(article_container.find_elements(By.XPATH, "./*"))):
-        title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+        nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
+        title_selenium = nav_container.find_elements(By.XPATH, "./*")[title_index]
         article_container = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU")
         article_selenium = article_container.find_elements(By.XPATH, "./*")[i]
         article = BeautifulSoup(article_selenium.get_attribute('outerHTML'), features="html.parser")
@@ -156,7 +175,8 @@ def scrape_article(node_parent: Node, title_index: int):
 
 def scrape_chapter(node_parent: Node, title_index: int, article_index: int):
     
-    title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+    nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
+    title_selenium = nav_container.find_elements(By.XPATH, "./*")[title_index]
     article_selenium = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU").find_elements(By.XPATH, "./*")[article_index]
     chapter_container = article_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU")
     if chapter_container is None:
@@ -218,7 +238,9 @@ def scrape_chapter(node_parent: Node, title_index: int, article_index: int):
 
 def scrape_section(node_parent: Node, title_index: int, article_index: int, chapter_index: int):
     global ALL_ELEMENTS
-    title_selenium = DRIVER.find_element(By.ID, "indianaCodeSidenav").find_elements(By.XPATH, "./*")[title_index]
+
+    nav_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "indianaCodeSidenav")))
+    title_selenium = nav_container.find_elements(By.XPATH, "./*")[title_index]
     article_selenium = title_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU").find_elements(By.XPATH, "./*")[article_index]
     chapter_selenium = article_selenium.find_element(By.CLASS_NAME, "ICMenu_menu__3aZYU").find_elements(By.XPATH, "./*")[chapter_index]
     
