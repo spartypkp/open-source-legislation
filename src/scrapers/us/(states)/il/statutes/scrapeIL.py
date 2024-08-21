@@ -51,7 +51,7 @@ BASE_URL = "https://www.ilga.gov/legislation/ilcs/"
 ARTICLE_BASE_URL = "https://www.ilga.gov"
 TOC_URL = "https://www.ilga.gov/legislation/ilcs/ilcs.asp"
 # List of words that indicate a node is reserved
-RESERVED_KEYWORDS = ["Repealed"]
+RESERVED_KEYWORDS = ["(Repealed"]
 
 
 def main():
@@ -154,19 +154,33 @@ def scrape_acts(node_parent: Node):
         if category_heading is not None:
             current_category = act_container.get_text().strip()
             continue
+
         link_container = act_container.find("a")
         href = link_container['href']
         link = f"{BASE_URL}{href}"
         level_classifier="act"
         node_type = "structure"
         parent = node_parent.node_id
-        core_metadata = {"category": current_category}
+        # Only add categories when actually present
+        core_metadata = {}
+        if current_category != "":
+            core_metadata["category"] = current_category
+
         node_name = link_container.get_text().strip()
         node_name = node_name.replace(nonBreakSpace, ' ')
         
         number = node_name.split("/")[0]
         number = number.split(" ")[2]
         node_id = f"{parent}/act={number}"
+
+        status = None
+        for word in RESERVED_KEYWORDS:
+            if word in node_name:
+                status = "reserved"
+                break
+
+        if core_metadata == {}:
+            core_metadata = None
 
         act_node = Node(
             id=node_id,
@@ -177,13 +191,19 @@ def scrape_acts(node_parent: Node):
             node_name=node_name,
             top_level_title=number,
             parent=parent,
-            core_metadata=core_metadata
+            core_metadata=core_metadata,
+            status=status
         )
         insert_node(act_node, TABLE_NAME, debug_mode=True)
 
+        # Simply continue when repealed acts occurr
+        if not status:
+            continue
+
         article_soup = get_url_as_soup(link)
         all_article_containers: List[Tag] = article_soup.find_all(class_="indent-10")
-        print(len(all_article_containers))
+
+        # Scrape articles BEFORE scraping sections. Needs testing
         if len(all_article_containers) == 0:
             scrape_sections(act_node, article_soup)
         else:
@@ -268,11 +288,13 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
         for i, paragraph_container in enumerate(section_paragraph_containers):
             text = paragraph_container.get_text().strip()
             if text != "":
-                node_text.add_paragraph(text=text)
+                
                 if "(Source:" in text:
                     addendum.source.text += text
+                else:
+                    node_text.add_paragraph(text=text)
                
-        
+        status = None
         node_name = f"Section {number}"
         
         section_node = Node(
@@ -284,7 +306,9 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
             number=number,
             node_name=node_name,
             node_text=node_text,
-            addendum=addendum
+            addendum=addendum,
+            parent=parent,
+            status=status
         )
         insert_node(section_node, TABLE_NAME, debug_mode=True)
         

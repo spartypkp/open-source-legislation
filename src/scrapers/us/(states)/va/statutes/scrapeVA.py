@@ -49,7 +49,6 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://law.lis.virginia.gov"
 TOC_URL =  "https://law.lis.virginia.gov/vacode/"
-SKIP_TITLE = 0
 RESERVED_KEYWORDS = ["[Repealed]"]
 
 
@@ -107,10 +106,14 @@ def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
         
         node_type = "structure"
         parent = node_parent.node_id
-        status = None
         core_metadata = None
         
         for i, container in enumerate(all_containers):
+            # Break out of processing chapters hiding as structure nodes
+            # Example: https://law.lis.virginia.gov/vacode/title3.2/ 
+            if container.find("dl", recursive=False):
+                scrape_chapters(soup, node_parent)
+                return
             node_name_container = container.find("b")
             node_name = node_name_container.get_text().strip()
             level_classifier = node_name.split(" ")[0].lower()
@@ -118,6 +121,13 @@ def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
             if number[-1] == ".":
                 number = number[:-1]
             node_id = f"{node_parent.node_id}/{level_classifier}={number}"
+
+            status = None
+            for word in RESERVED_KEYWORDS:
+                if word in node_name:
+                    status = "reserved"
+                    break
+
             structure_node = Node(
                 id=node_id,
                 link=str(node_parent.link),
@@ -129,7 +139,9 @@ def recursive_scrape(soup: BeautifulSoup, node_parent: Node):
                 top_level_title=node_parent.top_level_title
             )
             insert_node(structure_node, TABLE_NAME, debug_mode=True) 
-            recursive_scrape(container, structure_node)
+
+            if not status:
+                recursive_scrape(container, structure_node)
 
 
 
@@ -204,6 +216,14 @@ def scrape_sections(node_parent: Node):
             if article_number[-1] == ".":
                 article_number = article_number[:-1]
             article_node_id = f"{node_parent.node_id}/article={article_number}"
+
+            article_status = None
+            for word in RESERVED_KEYWORDS:
+                if word in node_name:
+                    article_status = "reserved"
+                    break
+
+
             article_node = Node(
                 id=article_node_id,
                 link=node_parent.link,
@@ -212,7 +232,8 @@ def scrape_sections(node_parent: Node):
                 node_type="structure",
                 node_name=article_name,
                 parent=node_parent.node_id,
-                level_classifier="article"
+                level_classifier="article",
+                status=article_status
             )
             insert_node(article_node, TABLE_NAME, debug_mode=True)
             parent=article_node.node_id

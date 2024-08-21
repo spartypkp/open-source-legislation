@@ -157,6 +157,9 @@ def recursive_scrape(node_parent: Node):
         try:
             node_name_start  = link_container.get_text()
             level_classifier = node_name_start.split(" ")[0].lower()
+            # Found broken parts of the site: https://legislature.idaho.gov/statutesrules/idstat/Title41/T41CH35/
+            if level_classifier.strip() == "":
+                raise ValueError(f"Stupid Idaho broke this particular page: {link}")
             # Handle weird cases. See us/id/statutes/title=40/chapter=16, considering this an article
             if level_classifier not in ALLOWED_LEVELS:
                 level_classifier = "article"
@@ -183,6 +186,7 @@ def recursive_scrape(node_parent: Node):
         
         structure_node = Node(
                 id=node_id,
+                status=status,
                 link=link,
                 number=number,
                 node_type=node_type,
