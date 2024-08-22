@@ -189,10 +189,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/id/statutes",
-        "Status": "Testing",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/id/statutes/us_id_statutes.sql)"
     },
     {
         "Country": "us",
@@ -202,10 +202,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/il/statutes",
-        "Status": "Testing",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/il/statutes/us_il_statutes.sql)"
     },
     {
         "Country": "us",
@@ -215,10 +215,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/in/statutes",
-        "Status": "Testing",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/in/statutes/us_in_statutes.sql)"
     },
     {
         "Country": "us",
@@ -540,10 +540,10 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/va/statutes",
-        "Status": "Testing",
+        "Status": "Complete",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
-        "DownloadLink": "N/A"
+        "DownloadLink": "[download](https://jwscgsmkadanioyopaef.supabase.co/storage/v1/object/public/open-source-legislation/us/va/statutes/us_va_statutes.sql)"
     },
     {
         "Country": "us",

@@ -49,7 +49,7 @@ CORPUS = "statutes"
 TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
 BASE_URL = "https://law.lis.virginia.gov"
 TOC_URL =  "https://law.lis.virginia.gov/vacode/"
-RESERVED_KEYWORDS = ["[Repealed]"]
+RESERVED_KEYWORDS = ["[Repealed]", "Repealed."]
 
 
 def main():
@@ -266,6 +266,14 @@ def scrape_sections(node_parent: Node):
             
             node_name_container = section_content.find("h2")
             node_name = node_name_container.get_text().strip()
+
+            status = None
+            # Check for reserved status
+            for word in RESERVED_KEYWORDS:
+                if word in node_name:
+                    status = "reserved"
+                    break
+            
             
             number = node_name.split(" ")[1]
 
@@ -315,8 +323,12 @@ def scrape_sections(node_parent: Node):
                     addendum.history = AddendumType(text=text, reference_hub=references)
                 else:
                     node_text.add_paragraph(text=text, reference_hub=references)
+
             if processing == {}:
                 processing = None
+            if node_text.paragraphs == {}:
+                node_text = None
+                
             section_node = Node(
                 id=node_id,
                 link=link,

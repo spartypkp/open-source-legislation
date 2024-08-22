@@ -272,6 +272,9 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
         citation = title_tag.get_text().strip()
         number = citation.split("/")[-1].rstrip(".")
         node_text_container = title_tag.find_next("table")
+        link_container = title_tag.find_next("a")
+        link = f"https://www.ilga.gov{link_container['href']}"
+        node_name = ""
         
 
         if "Art. " in number:
@@ -294,21 +297,27 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
                     continue
                
                 # 1 & 2 - node_name
-                if valid_article_containers == 1 or valid_article_containers == 2:
-                    node_name += text
+                if valid_article_containers == 1:
+                    node_name = text
                     valid_article_containers += 1
                     continue
 
-                 # 3 - addendum source
-                if valid_article_containers == 1:
-                    article_addendum.source.text = text
-                    valid_article_containers += 1
-                    continue
+                #  # 3 - addendum source
+                # if valid_article_containers == 1:
+                #     article_addendum.source.text = text
+                #     valid_article_containers += 1
+                #     continue
                 
             
             number = node_name.split(" ")[1]
             if number[-1] == ".":
                 number = number[:-1]
+
+            status = None
+            for word in RESERVED_KEYWORDS:
+                if word in node_name:
+                    status = "reserved"
+                    break
 
             article_parent = node_parent.node_id
             article_node_id = f"{article_parent}/{level_classifier}={number}"
@@ -322,10 +331,11 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
                 top_level_title=node_parent.top_level_title,
                 parent=article_parent,
                 citation=citation,
-                addendum=article_addendum
+                addendum=article_addendum,
+                status=status
             )
             insert_node(article_node, TABLE_NAME, debug_mode=True)
-            section_parent = node_id
+            section_parent = article_node_id
         ## 
         else:
 
@@ -344,39 +354,54 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
             
             section_paragraph_containers = node_text_container.find_all("code")
             
-
-            
+           
             valid_containers = 0
             for i, paragraph_container in enumerate(section_paragraph_containers):
-                text = paragraph_container.get_text().strip().replace(nonBreakSpace, "")
+                text = paragraph_container.get_text().replace(nonBreakSpace, "")
                 
                 # Skip empty <code> blocks
-                if text == "":
-                    
+                if text.strip() == "":
+                    # Dirty check to see if we can add a node name end
                     continue
+                #print(f"Text: {text}, valid_containers:{valid_containers}")
                 # 0 - citation
                 if valid_containers == 0:
                     valid_containers += 1
                     continue
-                # 1 - addendum history
+               
+                if "(from " in text:
+                    addendum.history.text = text.strip()
+                    continue
+                if text.strip() == ".)":
+                    continue
+                # 1 - node_name start
                 if valid_containers == 1:
-                    addendum.history.text = text
+                    node_name = text.strip()
                     valid_containers += 1
                     continue
-                # 2 & 3 - node_name
-                if valid_containers == 3 or valid_containers == 4:
-                    node_name += text
-                    valid_containers += 1
-                    continue
+                # 2 - OPTIONAL continuation of the node_name
+                # if valid_containers == 2 and ((i == node_name_index+2) or (i == node_name_index+1)):
+                #     # This is all fucked
+                #     if valid_node_name_end(text):
+                #         node_name_end = " " + text.strip()
+                #         check_node_name_index = i
+                #         valid_containers += 1
+                #     continue
+                text = text.strip()
                 
                 # Rest of paragraphs
                 if "(Source:" in text:
-                    addendum.source.text += text
+                    addendum.source.text += text + ".)"
                 else:
                     node_text.add_paragraph(text=text)
+            
+            if addendum.history.text == "":
+                addendum.history = None
+            if addendum.source.text == "":
+                addendum.source = None
                 
             status = None
-            
+            node_name = node_name.strip()
             section_node = Node(
                 id=node_id,
                 link=link,
@@ -391,8 +416,19 @@ def scrape_sections(node_parent: Node, soup: BeautifulSoup):
                 parent=section_parent,
                 status=status
             )
+            
+            
             insert_node(section_node, TABLE_NAME, debug_mode=True)
-        
+
+
+def valid_node_name_end(text: str):
+    alphabet = "abcdefghijklmnopqrstuvwxyz."
+    for i in range(len(text)-2, -1, -1):
+        if text[i] in alphabet:
+            if text[i] + text[i+1] == ". ":
+                return True
+            break
+    return False
 
 if __name__ == "__main__":
     main()

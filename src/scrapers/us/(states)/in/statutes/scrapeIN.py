@@ -59,6 +59,7 @@ TOC_URL = "https://iga.in.gov/laws/2023/ic/titles/main"
 SKIP_TITLE = 0 
 # List of words that indicate a node is reserved
 RESERVED_KEYWORDS = ["Repealed", "Expired"]
+RESERVED_SECTION_KEYWORDS = [". Repealed", ". Expired"]
 
 # DRIVER = None
 DRIVER = webdriver.Chrome()
@@ -109,9 +110,9 @@ def scrape_toc_url(node_parent: Node):
             link=link,
             node_type=node_type,
             level_classifier=level_classifier,
-            number=number,
+            number=top_level_title,
             node_name=node_name,
-            top_level_title=number,
+            top_level_title=top_level_title,
             parent=parent,
         )
         insert_node(title_node, TABLE_NAME, debug_mode=True)
@@ -333,12 +334,7 @@ def scrape_section(node_parent: Node, title_index: int, article_index: int, chap
             txt = p.get_text().strip()
             if txt == "":
                 continue
-            
 
-            if p.find("i") is not None:
-                addendum.history = AddendumType(text=p.find("i").get_text().strip())
-            
-            # Regular text paragraph
 
             reference_hub = ReferenceHub()
             
@@ -355,6 +351,18 @@ def scrape_section(node_parent: Node, title_index: int, article_index: int, chap
                     processing['unknown_reference_corpus_in_node_text'] = True
 
                 reference_hub.references[ref_link] = Reference(text=ref_text, corpus=ref_corpus)
+            
+            if reference_hub.references == {}:
+                reference_hub = None
+
+            if p.find("i") is not None:
+                addendum.history = AddendumType(text=p.find("i").get_text().strip(), reference_hub=reference_hub)
+            else:
+                node_text.add_paragraph(txt, reference_hub=reference_hub)
+            
+            # Regular text paragraph
+
+            
                     
             # Attempting to determine indentation level of paragraph. Remove for now
             # if 'style' in p.attrs:
@@ -377,7 +385,16 @@ def scrape_section(node_parent: Node, title_index: int, article_index: int, chap
             #     indentation = 3
             #     text_indentation.append(indentation)
             
-            node_text.add_paragraph(txt, reference_hub=reference_hub)
+            
+
+        status = None
+        for word in RESERVED_SECTION_KEYWORDS:
+            if word in node_name:
+                index = node_name.index(word)+len(word)
+                #print(f"Node name: {node_name}, Index: {index}, length: {len(node_name)}")
+                if index == len(node_name):
+                    status = "reserved"
+                    break
 
         if processing == {}:
             processing = None
@@ -389,6 +406,7 @@ def scrape_section(node_parent: Node, title_index: int, article_index: int, chap
             link=link,
             citation=citation,
             node_type=node_type,
+            top_level_title=node_parent.top_level_title,
             level_classifier=level_classifier,
             number=number,
             node_name=node_name,
