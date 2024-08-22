@@ -1,31 +1,63 @@
-from bs4 import BeautifulSoup, NavigableString
-import urllib.parse 
-from urllib.parse import unquote, quote
-import urllib.request
-from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 import os
 import sys
-import psycopg2
-DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
-from urllib.error import URLError
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
+from typing import List, Tuple
+import time
+import json
+import re
+
+from pathlib import Path
 
 DIR = os.path.dirname(os.path.realpath(__file__))
-BASE_URL = "https://www.kslegislature.org/li/b2023_24/statute/"
-TABLE_NAME = "ks_node"
- = "madeline"
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms, ALLOWED_LEVELS
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
+
+
+
+SKIP_TITLE = 0 # If you want to skip the first n titles, set this to n
+COUNTRY = "us"
+# State code for states, 'federal' otherwise
+JURISDICTION = "ks"
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
+
+BASE_URL = "https://www.kslegislature.org"
+TOC_URL = "https://www.kslegislature.org/li/b2023_24/statute/"
+
 
 def main():
-    # insert_jurisdiction_and_corpus_node()
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
+    scrape_toc_page(corpus_node)
 
-    URL = "https://www.kslegislature.org/li/b2023_24/statute/"
-   
-    response = urllib.request.urlopen(URL)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text)
+def scrape_toc_page(node_parent: Node):
+    soup = get_url_as_soup(TOC_URL)
 
     soup = soup.find(id="statutefull")
     soup2 = soup.find("center")
@@ -34,32 +66,42 @@ def main():
     for tr in all_trs[64:]:
         link = tr.find("a")
         
-        chapter_url = BASE_URL + link['href']
+        chapter_url = TOC_URL + link['href']
         if ("chapter" in chapter_url):
             b_tag = tr.find("b")
             node_name = b_tag.get_text().strip()
-            node_number = node_name.split()
-            top_level_title = node_number[1].replace('.', '')
+            number = node_name.split()
+            if number[-1] == ".":
+                number = number[:-1]
+            top_level_title = number
 
-            node_parent = "ks/statutes/"
-            node_level_classifier = "CHAPTER"
-            node_id = f"{node_parent}CHAPTER={top_level_title}/" 
+            parent = node_parent.node_id
+            level_classifier = "chapter"
+            node_id = f"{parent}/chapter={top_level_title}" 
 
             node_type = "structure"
-            node_text = None
-            node_link = chapter_url
-            node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-            insert_node(node_data)
-            node_parent = node_id
-            scrape_per_title(chapter_url, top_level_title, node_parent)
+            status = None
+            link = chapter_url
+
+            chapter_node = Node(
+                id=node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=top_level_title,
+                parent=parent,
+                status=status
+            )
+            insert_node(chapter_node, TABLE_NAME, debug_mode=True)
+            
+            scrape_articles(chapter_node)
 
 # Chapter -> Article -> Section
-def scrape_per_title(url, top_level_title, node_parent):
-    response = urllib.request.urlopen(url)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text)
-   
+def scrape_articles(node_parent: Node):
+    chapter_url = str(node_parent.link)
+    soup = get_url_as_soup(chapter_url)
 
     soup = soup.find(id="statutefull")
     soup2 = soup.find("center")
@@ -68,28 +110,39 @@ def scrape_per_title(url, top_level_title, node_parent):
     for tr in all_trs: 
         link = tr.find("a")
         
-        article_url = url + link['href']
+        article_url =  chapter_url + link['href']
         
         if ("article" in article_url):
             b_tag = tr.find("b")
             node_name = b_tag.get_text().strip()
-            node_number = node_name.split()
-            article_number = node_number[1].replace('.', '')
-            node_level_classifier = "ARTICLE"
-            node_id = f"{node_parent}ARTICLE={article_number}/" 
+            number = node_name.split()
+            number = number[1].replace('.', '')
+            if number[-1] == ".":
+                number = number[:-1]
+            level_classifier = "article"
+            parent = node_parent.node_id
+            node_id = f"{parent}/{level_classifier}={number}" 
             node_type = "structure"
-            node_text = None
-            node_link = article_url
-            node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-            insert_node(node_data)
-            article_node_parent = node_id
-            scrape_per_article(article_url, top_level_title, article_node_parent)
+            
+            link = article_url
+            status = None
+            article_node = Node(
+                id=node_id,
+                link=link,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=parent,
+                status=status
+            )
+            insert_node(article_node, TABLE_NAME, debug_mode=True)
+            scrape_sections(article_node)
 
-def scrape_per_article(url, top_level_title, node_parent):
-    response = urllib.request.urlopen(url)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text)
+def scrape_sections(node_parent: Node):
+    article_url = str(node_parent.link)
+    soup = get_url_as_soup(article_url)
     
     #href="../../001_000_0000_chapter/001_002_0000_article/001_002_0001_section/001_002_0001_k/"
 
@@ -101,154 +154,86 @@ def scrape_per_article(url, top_level_title, node_parent):
         link = tr.find("a")
         section_url_get = link['href'] 
         cleaned_url = section_url_get.replace('../../', '')
-        section_url = BASE_URL+ cleaned_url
-        print("new section url:" + section_url)
-        top_level_title = top_level_title
-        section_node_parent = node_parent
+        section_url = TOC_URL+ cleaned_url
         
-        scrape_per_section(section_url, top_level_title, section_node_parent)
-
-def scrape_per_section(url, top_level_title, section_node_parent):
-    response = urllib.request.urlopen(url)
-    data = response.read()      # a `bytes` object
-    text = data.decode('utf-8') # a `str`; 
-    soup = BeautifulSoup(text, 'html.parser')
-
-    soup_statutefull = soup.find("div", id="statutefull")
-    all_tables = soup_statutefull.find_all("table")
-    
- 
-
-    node_type = "content"
-    node_level_classifier = "SECTION"
-    node_link = url
-    top_level_title = top_level_title  
-    node_tags = None 
-    node_parent = section_node_parent
-    node_addendum = None
-   
-
-    
-    text_table = all_tables[1]
+        top_level_title = node_parent.top_level_title
+        parent = node_parent.node_id
         
 
-    node_text = []
-    paragraph = text_table.find("td")
- 
+        section_soup = get_url_as_soup(section_url)
+        soup_statutefull = section_soup.find("div", id="statutefull")
+        all_tables = soup_statutefull.find_all("table")
+        
+
+        node_type = "content"
+        level_classifier = "section"
+        link = section_url
+        core_metadata = None 
+        
+        addendum = Addendum()
     
-   
-    node_number_span = paragraph.find_all("span", class_="stat_5f_number")
-    node_number = ""
-    for element in node_number_span:
-        node_number += element.get_text().strip()
-      
-        # node_number2 = node_number.split("-")[-1].replace('.','')
-        print(node_number)
-    node_number2 = node_number.split("-")[-1].replace('.','')
-    print(node_number2)
-    node_caption_span = paragraph.find("span", class_="stat_5f_caption")
-    if node_caption_span is None:
-        node_name = "BLANK"
-    else:
-        node_name_add = node_caption_span.get_text().strip()
-        node_name = f"Section {node_number2} {node_name_add}"
-    node_id = f"{node_parent}SECTION={node_number2}" 
-    node_citation = f"KS Stat § {node_number2}"
-
-    for element in paragraph.find_all(recursive=False):
-        node_text.append(element.get_text())
-
-
-           
-            
-    addendum_table = all_tables[2]
-    
-    paragraph = addendum_table.find("p")
-
-    if paragraph is None:
-        pass
-
-    else:
-        node_addendum = paragraph.get_text().strip()
+        text_table = all_tables[1]
             
 
-    node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, None, None, node_tags)  
-    insert_node(node_data)
+        node_text = NodeText()
+        paragraph = text_table.find("td")
     
-       
+        
+    
+        number_span = paragraph.find_all("span", class_="stat_5f_number")
+        number = ""
+        for element in number_span:
+            number += element.get_text().strip()
+        
+            # number2 = number.split("-")[-1].replace('.','')
+            print(number)
+        number2 = number.split("-")[-1].replace('.','')
+        print(number2)
+        node_caption_span = paragraph.find("span", class_="stat_5f_caption")
+        if node_caption_span is None:
+            node_name = "BLANK"
+        else:
+            node_name_add = node_caption_span.get_text().strip()
+            node_name = f"Section {number2} {node_name_add}"
+        node_id = f"{node_parent}SECTION={number2}" 
+        citation = f"KS Stat § {number2}"
+
+        for element in paragraph.find_all(recursive=False):
+            text = element.get_text().strip()
+            node_text.add_paragraph(text=text)
 
 
-def insert_jurisdiction_and_corpus_node():
-    jurisdiction_row_data = (
-        "ks/",
-        None,
-        "jurisdiction",
-        "FEDERAL",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    corpus_row_data = (
-        "ks/statutes/",
-        None,
-        "corpus",
-        "CORPUS",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        "ks/",
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    util.insert_row_to_local_db(, TABLE_NAME, jurisdiction_row_data)
-    util.insert_row_to_local_db(, TABLE_NAME, corpus_row_data)
+            
+                
+        addendum_table = all_tables[2]
+        paragraph = addendum_table.find("p")
 
+        if paragraph is None:
+            addendum = None
+        else:
+            addendum.history = AddendumType(text=paragraph.get_text().strip())
+                
 
-@retry(
-    retry=retry_if_exception_type(URLError),       # Retry on URLError
-    wait=wait_exponential(multiplier=1, max=60),   # Exponential backoff with a max wait of 60 seconds
-    stop=stop_after_attempt(5)                     # Stop after 5 attempts
-)
-def make_request(url):
-    try:
-        # Attempt to open the URL
-        response = urllib.request.urlopen(url)
-        return response
-
-    except urllib.error.HTTPError as e:
-        # Check if the error is a 404 Not Found
-        if e.code == 404:
-            print(f"URL not found, skipped: {url}")
-            return None
-
-
-
-
+        status = None
+        
+        section_node = Node(
+            id=node_id,
+            link=link,
+            citation=citation,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            node_text=node_text,
+            addendum=addendum,
+            top_level_title=top_level_title,
+            parent=parent,
+            status=status
+        )
+        
+        
+        insert_node(section_node, TABLE_NAME, debug_mode=True)
+    
 
 
 if __name__ == "__main__":
