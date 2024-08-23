@@ -514,7 +514,7 @@
         "Corpus": "statutes",
         "Corpus_description": "Statutes",
         "FilePath": "src/scrapers/us/(states)/tx/statutes",
-        "Status": "Refactoring",
+        "Status": "Testing",
         "DevComment": "Major Overhaul WIP",
         "LastUpdated": "2024-07-18T14:53:05.618081",
         "DownloadLink": "N/A"

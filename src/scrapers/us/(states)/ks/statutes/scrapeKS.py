@@ -70,10 +70,12 @@ def scrape_toc_page(node_parent: Node):
         if ("chapter" in chapter_url):
             b_tag = tr.find("b")
             node_name = b_tag.get_text().strip()
-            number = node_name.split()
+            
             if number[-1] == ".":
                 number = number[:-1]
             top_level_title = number
+            print(node_name)
+            
 
             parent = node_parent.node_id
             level_classifier = "chapter"

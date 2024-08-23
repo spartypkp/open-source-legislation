@@ -1,25 +1,56 @@
-import psycopg2
 import os
-import urllib.request
-from bs4 import BeautifulSoup
 import sys
-import time
-import json
-DIR = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(DIR)
-sys.path.append(parent)
-import utils.utilityFunctions as util
+# BeautifulSoup imports
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+
+# Selenium imports
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
+from typing import List, Tuple
+import time
+import json
 import re
 
- = "will2"
-TABLE_NAME = "tx_node"
+from pathlib import Path
+
+DIR = os.path.dirname(os.path.realpath(__file__))
+# Get the current file's directory
+current_file = Path(__file__).resolve()
+
+# Find the 'src' directory
+src_directory = current_file.parent
+while src_directory.name != 'src' and src_directory.parent != src_directory:
+    src_directory = src_directory.parent
+
+# Get the parent directory of 'src'
+project_root = src_directory.parent
+
+# Add the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms, ALLOWED_LEVELS
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
+
+
+
+SKIP_TITLE = 0 # If you want to skip the first n titles, set this to n
+COUNTRY = "us"
+# State code for states, 'federal' otherwise
+JURISDICTION = "tx"
+# 'statutes' is current default
+CORPUS = "statutes"
+# No need to change this
+TABLE_NAME =  f"{COUNTRY}_{JURISDICTION}_{CORPUS}"
+
+
 BASE_URL = "https://statutes.capitol.texas.gov"
 TOC_URL = "https://statutes.capitol.texas.gov/Index.aspx"
-SKIP_TITLE = 30 # If you want to skip the first n titles, set this to n
 RESERVED_KEYWORDS = ["Repealed"]
 
 CODE_MAP ={
@@ -57,13 +88,13 @@ CODE_MAP ={
 }
 
 def main():
-    insert_jurisdiction_and_corpus_node()
+    corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
     # scrape_constitution
-    scrape_all_titles()
+    scrape_all_titles(corpus_node)
 
 
 
-def scrape_all_titles():
+def scrape_all_titles(node_parent: Node):
     
     driver = webdriver.Chrome()
     driver.get(TOC_URL)
@@ -75,10 +106,8 @@ def scrape_all_titles():
 
     # Open the titles table
     titles_table.click()
-    time.sleep(4)
     
-
-    og_parent = "tx/statutes/"
+    parent = node_parent.node_id
     for i in range(SKIP_TITLE, 31):
         soup = BeautifulSoup(driver.page_source, features="html.parser").body
         title_soup = soup.find(id="ctl00_ContentPlaceHolder1_NavTreen1Nodes")
@@ -94,10 +123,10 @@ def scrape_all_titles():
         top_level_title = CODE_MAP[node_name]
         node_type = "structure"
         node_link = TOC_URL
-        node_id = f"{og_parent}{node_level_classifier}={top_level_title}/"
+        node_id = f"{parent}{node_level_classifier}={top_level_title}/"
         print(node_id)
         
-        title_node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, og_parent, None, None, None, None, None)
+        title_node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, parent, None, None, None, None, None)
         insert_node_ignore_duplicate(title_node_data)
 
         a_tag = name_container.find("a")
@@ -396,73 +425,7 @@ def scrape_sections(level_container, top_level_title, node_parent):
                 continue
 
 
-            
-                    
-                
-
-
-            
-
-
-
-
-   
     
-
-# Needs to be updated for each jurisdiction
-def insert_jurisdiction_and_corpus_node():
-    jurisdiction_row_data = (
-        "tx/",
-        None,
-        "jurisdiction",
-        "STATE",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    corpus_row_data = (
-        "tx/statutes/",
-        None,
-        "corpus",
-        "CORPUS",
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        "tx/",
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    insert_node_ignore_duplicate(jurisdiction_row_data)
-    insert_node_ignore_duplicate(corpus_row_data)
-
-
-
-
     
 if __name__ == "__main__":
     main()
