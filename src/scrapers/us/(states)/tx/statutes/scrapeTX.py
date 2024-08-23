@@ -4,12 +4,20 @@ import sys
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-# Selenium imports
+
 from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.chrome.options import Options
+
+
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver import ActionChains
+
+from typing import List, Tuple
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from typing import List, Tuple
 import time
@@ -35,7 +43,7 @@ if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
 from src.utils.pydanticModels import NodeID, Node, Addendum, AddendumType, NodeText, Paragraph, ReferenceHub, Reference, DefinitionHub, Definition, IncorporatedTerms, ALLOWED_LEVELS
-from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup
+from src.utils.scrapingHelpers import insert_jurisdiction_and_corpus_node, insert_node, get_url_as_soup, selenium_element_present, selenium_elements_present
 
 
 
@@ -86,130 +94,147 @@ CODE_MAP ={
     "WATER CODE":"WA",
     "AUXILIARY WATER LAWS":"WL",
 }
+DRIVER = None
 
 def main():
     corpus_node: Node = insert_jurisdiction_and_corpus_node(COUNTRY, JURISDICTION, CORPUS)
     # scrape_constitution
-    scrape_all_titles(corpus_node)
+    scrape_all_codes(corpus_node)
 
 
 
-def scrape_all_titles(node_parent: Node):
+def scrape_all_codes(node_parent: Node):
     
-    driver = webdriver.Chrome()
-    driver.get(TOC_URL)
-    driver.implicitly_wait(2)
+    DRIVER = webdriver.Chrome()
+    DRIVER.get(TOC_URL)
+    
 
     # Get the container of all titles
-    titles_container = driver.find_element(By.ID, "ctl00_ContentPlaceHolder1_NavTree")
-    titles_table = titles_container.find_elements(By.TAG_NAME, "table")[1]
-
-    # Open the titles table
-    titles_table.click()
+    codes_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "ctl00_ContentPlaceHolder1_NavTreet1")))
+    codes_container.click()
     
     parent = node_parent.node_id
     for i in range(SKIP_TITLE, 31):
-        soup = BeautifulSoup(driver.page_source, features="html.parser").body
+        
+        codes_container =  WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, "ctl00_ContentPlaceHolder1_NavTreen1Nodes")))
+        # code_container =  WebDriverWait(DRIVER, 5).until(selenium_elements_present(codes_container, (By.TAG_NAME, "table")))
+
+
+        soup = BeautifulSoup(DRIVER.page_source, features="html.parser").body
         title_soup = soup.find(id="ctl00_ContentPlaceHolder1_NavTreen1Nodes")
         title_table = title_soup.find_all("table", recursive=False)[i]
         #print(title_table.prettify())
 
         name_container = title_table.tbody.tr.find_all("td", recursive=False)[-1]
         node_name = name_container.get_text().strip()
-        node_level_classifier = "CODE"
+        level_classifier = "code"
        
-        if node_name == "PROBATE CODE":
-            continue
-        top_level_title = CODE_MAP[node_name]
+
+        top_level_title = CODE_MAP[node_name].lower()
+        number = top_level_title
         node_type = "structure"
-        node_link = TOC_URL
-        node_id = f"{parent}{node_level_classifier}={top_level_title}/"
-        print(node_id)
+        link = TOC_URL
+        node_id = f"{parent}/{level_classifier}={top_level_title}"
+        status=None
+        code_node = Node(
+            id=node_id,
+            link=link,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            top_level_title=top_level_title,
+            parent=parent,
+            status=status
+        )
+        insert_node(code_node, TABLE_NAME, debug_mode=True)
         
-        title_node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, parent, None, None, None, None, None)
-        insert_node_ignore_duplicate(title_node_data)
 
         a_tag = name_container.find("a")
         title_table_id = a_tag.get("id").replace("Treet", "Treen") + "Nodes"
         print(title_table_id)
-        #print(title_table_id)
-        title_table_selenium = driver.find_element(By.ID, a_tag.get("id"))
+        
+        title_table_selenium = DRIVER.find_element(By.ID, a_tag.get("id"))
         # ctl00_ContentPlaceHolder1_NavTreet2
         # Scroll to the title table
-        driver.execute_script("arguments[0].scrollIntoView();", title_table_selenium)
-        time.sleep(2)
+        DRIVER.execute_script("arguments[0].scrollIntoView();", title_table_selenium)
         title_table_selenium.click()
-        time.sleep(10)
+
+        title_table_selenium = DRIVER.find_element(By.ID, a_tag.get("id"))
+        temp = WebDriverWait(DRIVER, 5).until(selenium_element_present(DRIVER, (By.ID, title_table_id)))
         # ctl00_ContentPlaceHolder1_NavTreen1Nodes
         
 
         # Get the title table one last time, tree HTML loaded
-        soup = BeautifulSoup(driver.page_source, features="html.parser").body      
+        soup = BeautifulSoup(DRIVER.page_source, features="html.parser").body      
         level_container = soup.find(id=f"{title_table_id}")
         if level_container.find_all(recursive=False)[0].find(class_="PDFicon") is not None:
-            scrape_sections(level_container, top_level_title, node_id)
+            scrape_sections(node_parent, level_container)
         else:
-            scrape_level(level_container, top_level_title, node_id)
+            scrape_level(node_parent, level_container)
 
 
-        driver = webdriver.Chrome()
-        driver.get(TOC_URL)
-        driver.implicitly_wait(2)
-
+        DRIVER = webdriver.Chrome()
+        DRIVER.get(TOC_URL)
         # Get the container of all titles
-        titles_container = driver.find_element(By.ID, "ctl00_ContentPlaceHolder1_NavTree")
+        titles_container = DRIVER.find_element(By.ID, "ctl00_ContentPlaceHolder1_NavTree")
         titles_table = titles_container.find_elements(By.TAG_NAME, "table")[1]
 
         # Open the titles table
         titles_table.click()
-        time.sleep(4)
         
 
         
     
 
-def scrape_level(level_container, top_level_title, node_parent):
+def scrape_level(node_parent: Node, level_container: Tag):
     
-
-
     all_child_containers = level_container.find_all(recursive=False)
     for i in range(0, len(all_child_containers), 2):
         
         current_level = all_child_containers[i]
         node_name = current_level.get_text().strip()
-        node_level_classifier = node_name.split(" ")[0]
-        node_number = node_name.split(" ")[1]
-        if node_number[-1] == ".":
-            node_number = node_number[:-1]
+        level_classifier = node_name.split(" ")[0].lower()
+        number = node_name.split(" ")[1]
+        if number[-1] == ".":
+            number = number[:-1]
         node_type = "structure"
-        node_link = TOC_URL
-        node_id = f"{node_parent}{node_level_classifier}={node_number}/"
-        node_data = (node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
-        #print(node_data)
+        link = TOC_URL
+        parent = node_parent.node_id
+        node_id = f"{parent}/{level_classifier}={number}"
+        status = None
         try:
             next_level_container = all_child_containers[i+1]
         except:
-            node_type = "reserved"
+            status = "reserved"
+        
 
          ## INSERT STRUCTURE NODE, if it's already there, skip it
-        try:
-            insert_node(node_data)
-            print(node_id)
-        except:
-            print("** Skipping:",node_id)
-            continue
+        structure_node = Node(
+            id=node_id,
+            link=link,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            top_level_title=node_parent.top_level_title,
+            parent=parent,
+            status=status
+        )
+        insert_node(structure_node, TABLE_NAME, debug_mode=True)
         
-        if node_type != "reserved":
+        
+        if status is None:
             if next_level_container.find_all(recursive=False)[0].find(class_="PDFicon") is not None:
-                scrape_sections(next_level_container, top_level_title, node_id)
+                scrape_sections(structure_node, next_level_container)
             else:
-                scrape_level(next_level_container, top_level_title, node_id)
+                scrape_level(structure_node, next_level_container)
 
 
 
 
 
-def scrape_sections(level_container, top_level_title, node_parent):
+def scrape_sections(node_parent: Node, level_container: Tag):
     
     for i, child in enumerate(level_container.find_all(recursive=False)):
         
@@ -218,28 +243,31 @@ def scrape_sections(level_container, top_level_title, node_parent):
         name_tag = all_a_tags[1]
         #print(name_tag.prettify())
         node_name = name_tag.get_text().strip()
-        node_level_classifier = node_name.split(" ")[0]
-        node_number = node_name.split(" ")[1]
-        if node_number[-1] == ".":
-            node_number = node_number[:-1]
+        level_classifier = node_name.split(" ")[0]
+        number = node_name.split(" ")[1]
+        if number[-1] == ".":
+            number = number[:-1]
         node_type = "structure"
         link_tag = all_a_tags[3]
-        node_link = link_tag.get("href")
+        link = link_tag.get("href")
 
-        chapter_node_id = f"{node_parent}{node_level_classifier}={node_number}/"
-        node_data = (chapter_node_id, top_level_title, node_type, node_level_classifier, None, None, None, node_link, None, node_name, None, None, None, None, None, node_parent, None, None, None, None, None)
+        status = None
+        chapter_node_id = f"{node_parent}/{level_classifier}={number}"
+        chapter_node = Node(
+            id=chapter_node_id,
+            link=link,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            top_level_title=node_parent.top_level_title,
+            parent=node_parent.node_id,
+            status=status
+        )
+        insert_node(chapter_node, TABLE_NAME, debug_mode=True)
+
         
-         ## INSERT STRUCTURE NODE, if it's already there, skip it
-        try:
-            insert_node(node_data)
-            print(chapter_node_id)
-        except:
-            print("** Skipping:",chapter_node_id)
-            continue
-
-
-        
-        file_target = node_link.split("/")[-1]
+        file_target = link.split("/")[-1]
         directory_target = file_target.split(".")[0] + ".htm"
 
         file_path = f"{DIR}/data/{directory_target}/{file_target}"
@@ -252,8 +280,6 @@ def scrape_sections(level_container, top_level_title, node_parent):
             all_p_tags = []
             # Remove all tags that have class="center"
             for p in all_p_tags_raw:
-                print(p.prettify())
-                print(p.get("class"))
                 if p.get("class") is not None:
                     if p.get("class") == []:
                         all_p_tags.append(p)
@@ -264,167 +290,143 @@ def scrape_sections(level_container, top_level_title, node_parent):
             node_id = None
 
             for p in all_p_tags:
-                print(p.prettify())
+                
                 txt = re.sub(r'\s+', ' ', p.get_text().strip())
                 if txt == "":
                     continue
-                print(txt)
+                
 
                 if txt[0:5] == "Sec. " or txt[0:5] == "Art. ":
                     print("== New Section or Article ==")
                     if node_id is not None:
                         print("== Inserting Previous Section ==")
-                        if len(internal) > 0:
-                            node_references['internal'] = internal
-                        if len(external) > 0:
-                            node_references['external'] = external
-                        if node_references == {}:
-                            node_references = None
-                        else:
-                            node_references = json.dumps(node_references)
-                        section_node_link = node_link + f"#{node_number}"
+                        section_link = link + f"#{number}"
                          ### FOR ADDING A CONTENT NODE, allowing duplicates
-                        node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, section_node_link, node_addendum, node_name, None, None, None, None, None, chapter_node_id, None, None, node_references, None, node_tags)
-                        base_node_id = node_id
-
+                        status=None
                         for word in RESERVED_KEYWORDS:
                             if word in node_name:
-                                node_type = "reserved"
+                                status = "reserved"
                                 break
-                            
-                        
-                        for i in range(2, 10):
-                            try:
-                                insert_node(node_data)
-                                print(node_id)
-                                #print("Inserted!")
-                                break
-                            except Exception as e:   
-                                print(e)
-                                node_id = base_node_id + f"-v{i}/"
-                                node_type = "content_duplicate"
-                                node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, section_node_link, node_addendum, node_name, None, None, None, None, None, node_parent, None, None, node_references, None, node_tags)
-                            continue
-                        node_references = {}
-                        node_tags = None
-                        internal = []
-                        external= []
+                        new_node = Node(
+                            id=node_id,
+                            link=section_link,
+                            citation=node_citation,
+                            node_type=node_type,
+                            level_classifier=level_classifier,
+                            number=number,
+                            node_name=node_name,
+                            top_level_title=node_parent.top_level_title,
+                            parent=node_parent.node_id,
+                            status=status
+                        )
+                        insert_node(new_node, TABLE_NAME, debug_mode=True)
+                
+                        core_metadata = {}
+                        processing = {}
                         
                     # Find the index of the 4th occurence of "." in txt
                     # This is the index of the end of the section number
-                    node_number = txt.split(" ")[1]
-                    index = node_number.count(".") + 1
+                    number = txt.split(" ")[1]
+                    index = number.count(".") + 1
                     try:
                         node_name_index = [pos for pos, char in enumerate(txt) if char == '.'][index]
                     except:
                         node_name_index = len(txt) - 1
                     node_name = txt[0: node_name_index + 1]
                     
-                    if node_number[-1] == ".":
-                        node_number = node_number[:-1]
+                    if number[-1] == ".":
+                        number = number[:-1]
                     
                     full_name = ""
                     for k,v in CODE_MAP.items():
-                        if v == top_level_title:
+                        if v == node_parent.top_level_title:
                             full_name = k
                             break
 
                     # Convert full_name, which is in all caps, to camel case (TEST STRING -> Test String)
                     full_name = " ".join([word.capitalize() for word in full_name.split(" ")])
                     
-                    node_citation =f"Tex. {full_name} § {node_number}"
-                    node_addendum = ""
+                    node_citation =f"Tex. {full_name} § {number}"
+                    node_addendum = Addendum()
                     if txt[0:5] == "Art. ":
-                        node_level_classifier = "ARTICLE"
+                        level_classifier = "article"
                     else:
-                        node_level_classifier = "SECTION"
-                    node_text = []
-
-                    node_text.append(txt[node_name_index + 1:])
+                        level_classifier = "section"
+                    node_text = NodeText()
+                    
+                    references = find_references(p, processing)
+                    node_text.add_paragraph(txt[node_name_index + 1:], reference_hub=references)
                     node_type = "content"
-                    node_references = {}
-                    node_tags = None
-                    internal = []
-                    external= []
-                    node_id = f"{chapter_node_id}{node_level_classifier}={node_number}"
+                    node_id = f"{chapter_node_id}/{level_classifier}={number}"
                     addendum_found = False
                     
                 elif 'style' in p.attrs and not addendum_found:
                     print("== Style Case ==")
-                    node_text.append(txt)
+                    references = find_references(p, processing)
+                    node_text.add_paragraph(txt, reference_hub=references)
                     
                 else:
                     print("== Default, Addendum ==")
-                    node_addendum += txt + "\n"
+                    node_addendum.history = AddendumType(text= f"{txt}\n")
                     addendum_found = True
                     
                 
-                for a in p.find_all("a"):
-                    if a.get("href") is not None:
-                        citation_link = a.get("href")
-                        citation_number = a.get_text().strip()
-                        # print(a.prettify())
-                        # print(citation_number)
-                        try:
-                            left_index = a.previous_sibling.text.rindex("(")
-                            left_text = a.previous_sibling.text[left_index:]
-
-                            right_index = a.next_sibling.text.index(")")
-                            right_text = a.next_sibling.text[:right_index + 1]
-                        except:
-                            
-                            try:
-                                left_text = a.previous_sibling.text[len(a.previous_sibling.text)-50:]
-                            except:
-                                left_text = ""
-                            try:
-                                right_text = a.previous_sibling.text[:50]
-                            except:
-                                right_text = ""
-                        
-                        citation_text = left_text + citation_number + right_text
-                        temp = {"citation_link": citation_link, "citation_text": citation_text, "citation_number": citation_number}
-                        if "https://statutes.capitol.texas.gov" in citation_link:
-                            internal.append(temp)
-                        else:
-                            external.append(temp)
-
-            print(node_id)
-            if node_id is None:
-                continue
-            print(node_references)
-            if len(internal) > 0:
-                node_references['internal'] = internal
-            if len(external) > 0:
-                node_references['external'] = external
-            if node_references == {}:
-                node_references = None
-            else:
-                node_references = json.dumps(node_references)
                 ### FOR ADDING A CONTENT NODE, allowing duplicates
 
             for word in RESERVED_KEYWORDS:
                 if word in node_name:
-                    node_type = "reserved"
+                    status = "reserved"
                     break
-            section_node_link = node_link + f"#{node_number}"
-            node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, section_node_link, node_addendum, node_name, None, None, None, None, None, chapter_node_id, None, None, node_references, None, node_tags)
-            base_node_id = node_id
+
+            section_link = link + f"#{number}"
+
+            new_node = Node(
+                id=node_id,
+                link=section_link,
+                citation=node_citation,
+                node_text=node_text,
+                addendum=node_addendum,
+                node_type=node_type,
+                level_classifier=level_classifier,
+                number=number,
+                node_name=node_name,
+                top_level_title=node_parent.top_level_title,
+                parent=chapter_node_id,
+                status=status
+            )
             
-            for i in range(2, 10):
+
+def find_references(p: Tag, processing) -> ReferenceHub:
+    reference_hub = ReferenceHub
+    for a in p.find_all("a"):
+        if a.get("href") is not None:
+            citation_link = a.get("href")
+            citation_number = a.get_text().strip()
+            # print(a.prettify())
+            # print(citation_number)
+            try:
+                left_index = a.previous_sibling.text.rindex("(")
+                left_text = a.previous_sibling.text[left_index:]
+
+                right_index = a.next_sibling.text.index(")")
+                right_text = a.next_sibling.text[:right_index + 1]
+            except:
+                
                 try:
-                    insert_node(node_data)
-                    print(node_id)
-                    #print("Inserted!")
-                    break
-                except Exception as e:   
-                    print(e)
-                    node_id = base_node_id + f"-v{i}/"
-                    node_type = "content_duplicate"
-                    node_data = (node_id, top_level_title, node_type, node_level_classifier, node_text, None, node_citation, section_node_link, node_addendum, node_name, None, None, None, None, None, chapter_node_id, None, None, node_references, None, node_tags)
-                continue
-
-
+                    left_text = a.previous_sibling.text[len(a.previous_sibling.text)-50:]
+                except:
+                    left_text = ""
+                try:
+                    right_text = a.previous_sibling.text[:50]
+                except:
+                    right_text = ""
+            
+            citation_text = left_text + citation_number + right_text
+            reference_hub[citation_link] = Reference(text=citation_text)
+            #temp = {"citation_link": citation_link, "citation_text": citation_text, "citation_number": citation_number}
+            if "https://statutes.capitol.texas.gov" not in citation_link:
+                processing['unknown_reference_corpus_in_node_text'] = True
+    return reference_hub
     
     
 if __name__ == "__main__":
