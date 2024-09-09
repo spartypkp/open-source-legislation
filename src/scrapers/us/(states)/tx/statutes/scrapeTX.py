@@ -169,9 +169,9 @@ def scrape_all_codes(node_parent: Node):
         soup = BeautifulSoup(DRIVER.page_source, features="html.parser").body      
         level_container = soup.find(id=f"{title_table_id}")
         if level_container.find_all(recursive=False)[0].find(class_="PDFicon") is not None:
-            scrape_sections(node_parent, level_container)
+            scrape_sections(code_node, level_container)
         else:
-            scrape_level(node_parent, level_container)
+            scrape_level(code_node, level_container)
 
 
         DRIVER = webdriver.Chrome()
@@ -243,7 +243,7 @@ def scrape_sections(node_parent: Node, level_container: Tag):
         name_tag = all_a_tags[1]
         #print(name_tag.prettify())
         node_name = name_tag.get_text().strip()
-        level_classifier = node_name.split(" ")[0]
+        level_classifier = node_name.split(" ")[0].lower()
         number = node_name.split(" ")[1]
         if number[-1] == ".":
             number = number[:-1]
@@ -252,7 +252,7 @@ def scrape_sections(node_parent: Node, level_container: Tag):
         link = link_tag.get("href")
 
         status = None
-        chapter_node_id = f"{node_parent}/{level_classifier}={number}"
+        chapter_node_id = f"{node_parent.node_id}/{level_classifier}={number}"
         chapter_node = Node(
             id=chapter_node_id,
             link=link,
@@ -267,137 +267,145 @@ def scrape_sections(node_parent: Node, level_container: Tag):
         insert_node(chapter_node, TABLE_NAME, debug_mode=True)
 
         
-        file_target = link.split("/")[-1]
-        directory_target = file_target.split(".")[0] + ".htm"
-
-        file_path = f"{DIR}/data/{directory_target}/{file_target}"
         
-        with open(file_path, "r") as file:
-            section_soup = BeautifulSoup(file.read(), features="html.parser")
+        processing = {}
+        section_soup = get_url_as_soup(link)
+        
+        
+        all_p_tags_raw = section_soup.find_all("p")
+        all_p_tags = []
+        # Remove all tags that have class="center"
+        for p in all_p_tags_raw:
+            if p.get("class") is not None:
+                if p.get("class") == []:
+                    all_p_tags.append(p)
+                    continue
+                if p.get("class")[0] != "center":
+                    all_p_tags.append(p)
+
+        node_id = None
+
+        for p in all_p_tags:
+            
+            txt = re.sub(r'\s+', ' ', p.get_text().strip())
+            if txt == "":
+                continue
             
 
-            all_p_tags_raw = section_soup.find_all("p")
-            all_p_tags = []
-            # Remove all tags that have class="center"
-            for p in all_p_tags_raw:
-                if p.get("class") is not None:
-                    if p.get("class") == []:
-                        all_p_tags.append(p)
-                        continue
-                    if p.get("class")[0] != "center":
-                        all_p_tags.append(p)
-
-            node_id = None
-
-            for p in all_p_tags:
-                
-                txt = re.sub(r'\s+', ' ', p.get_text().strip())
-                if txt == "":
-                    continue
-                
-
-                if txt[0:5] == "Sec. " or txt[0:5] == "Art. ":
-                    print("== New Section or Article ==")
-                    if node_id is not None:
-                        print("== Inserting Previous Section ==")
-                        section_link = link + f"#{number}"
-                         ### FOR ADDING A CONTENT NODE, allowing duplicates
-                        status=None
-                        for word in RESERVED_KEYWORDS:
-                            if word in node_name:
-                                status = "reserved"
-                                break
-                        new_node = Node(
-                            id=node_id,
-                            link=section_link,
-                            citation=node_citation,
-                            node_type=node_type,
-                            level_classifier=level_classifier,
-                            number=number,
-                            node_name=node_name,
-                            top_level_title=node_parent.top_level_title,
-                            parent=node_parent.node_id,
-                            status=status
-                        )
-                        insert_node(new_node, TABLE_NAME, debug_mode=True)
-                
-                        core_metadata = {}
-                        processing = {}
-                        
-                    # Find the index of the 4th occurence of "." in txt
-                    # This is the index of the end of the section number
-                    number = txt.split(" ")[1]
-                    index = number.count(".") + 1
-                    try:
-                        node_name_index = [pos for pos, char in enumerate(txt) if char == '.'][index]
-                    except:
-                        node_name_index = len(txt) - 1
-                    node_name = txt[0: node_name_index + 1]
-                    
-                    if number[-1] == ".":
-                        number = number[:-1]
-                    
-                    full_name = ""
-                    for k,v in CODE_MAP.items():
-                        if v == node_parent.top_level_title:
-                            full_name = k
+            if txt[0:5] == "Sec. " or txt[0:5] == "Art. ":
+                print("== New Section or Article ==")
+                if node_id is not None:
+                    print("== Inserting Previous Section ==")
+                    section_link = link + f"#{number}"
+                        ### FOR ADDING A CONTENT NODE, allowing duplicates
+                    status=None
+                    for word in RESERVED_KEYWORDS:
+                        if word in node_name:
+                            status = "reserved"
                             break
 
-                    # Convert full_name, which is in all caps, to camel case (TEST STRING -> Test String)
-                    full_name = " ".join([word.capitalize() for word in full_name.split(" ")])
-                    
-                    node_citation =f"Tex. {full_name} § {number}"
-                    node_addendum = Addendum()
-                    if txt[0:5] == "Art. ":
-                        level_classifier = "article"
-                    else:
-                        level_classifier = "section"
-                    node_text = NodeText()
-                    
-                    references = find_references(p, processing)
-                    node_text.add_paragraph(txt[node_name_index + 1:], reference_hub=references)
-                    node_type = "content"
-                    node_id = f"{chapter_node_id}/{level_classifier}={number}"
-                    addendum_found = False
-                    
-                elif 'style' in p.attrs and not addendum_found:
-                    print("== Style Case ==")
-                    references = find_references(p, processing)
-                    node_text.add_paragraph(txt, reference_hub=references)
-                    
-                else:
-                    print("== Default, Addendum ==")
-                    node_addendum.history = AddendumType(text= f"{txt}\n")
-                    addendum_found = True
-                    
-                
-                ### FOR ADDING A CONTENT NODE, allowing duplicates
-
-            for word in RESERVED_KEYWORDS:
-                if word in node_name:
-                    status = "reserved"
-                    break
-
-            section_link = link + f"#{number}"
-
-            new_node = Node(
-                id=node_id,
-                link=section_link,
-                citation=node_citation,
-                node_text=node_text,
-                addendum=node_addendum,
-                node_type=node_type,
-                level_classifier=level_classifier,
-                number=number,
-                node_name=node_name,
-                top_level_title=node_parent.top_level_title,
-                parent=chapter_node_id,
-                status=status
-            )
+                    if processing == {}:
+                        processing = None
+                    new_node = Node(
+                        id=node_id,
+                        link=section_link,
+                        citation=node_citation,
+                        node_type=node_type,
+                        level_classifier=level_classifier,
+                        number=number,
+                        node_name=node_name,
+                        top_level_title=node_parent.top_level_title,
+                        parent=node_parent.node_id,
+                        processing=processing,
+                        status=status
+                    )
+                    insert_node(new_node, TABLE_NAME, debug_mode=True)
+                    processing = {}
+                    node_id = None
             
+                    
+                    
+                # Find the index of the 4th occurence of "." in txt
+                # This is the index of the end of the section number
+                number = txt.split(" ")[1]
+                index = number.count(".") + 1
+                try:
+                    node_name_index = [pos for pos, char in enumerate(txt) if char == '.'][index]
+                except:
+                    node_name_index = len(txt) - 1
+                node_name = txt[0: node_name_index + 1]
+                
+                if number[-1] == ".":
+                    number = number[:-1]
+                
+                full_name = ""
+                for k,v in CODE_MAP.items():
+                    if v == node_parent.top_level_title:
+                        full_name = k
+                        break
+
+                # Convert full_name, which is in all caps, to camel case (TEST STRING -> Test String)
+                full_name = " ".join([word.capitalize() for word in full_name.split(" ")])
+                
+                node_citation =f"Tex. {full_name} § {number}"
+                node_addendum = Addendum()
+                if txt[0:5] == "Art. ":
+                    level_classifier = "article"
+                else:
+                    level_classifier = "section"
+                node_text = NodeText()
+                
+                references = find_references(p, processing)
+                print(references)
+                node_text.add_paragraph(txt[node_name_index + 1:], reference_hub=references)
+                node_type = "content"
+                node_id = f"{chapter_node_id}/{level_classifier}={number}"
+                addendum_found = False
+                
+            elif 'style' in p.attrs and not addendum_found:
+                print("== Style Case ==")
+                references = find_references(p, processing)
+                node_text.add_paragraph(txt, reference_hub=references)
+                
+            else:
+                print("== Default, Addendum ==")
+                node_addendum.history = AddendumType(text= f"{txt}\n")
+                addendum_found = True
+                
+            
+            ### FOR ADDING A CONTENT NODE, allowing duplicates
+
+        for word in RESERVED_KEYWORDS:
+            if word in node_name:
+                status = "reserved"
+                break
+
+        section_link = link + f"#{number}"
+
+        if processing == {}:
+            processing = None
+
+        new_node = Node(
+            id=node_id,
+            link=section_link,
+            citation=node_citation,
+            node_text=node_text,
+            addendum=node_addendum,
+            node_type=node_type,
+            level_classifier=level_classifier,
+            number=number,
+            node_name=node_name,
+            top_level_title=node_parent.top_level_title,
+            parent=chapter_node_id,
+            processing=processing,
+            status=status
+        )
+        insert_node(new_node, TABLE_NAME, debug_mode=True)
+        processing = {}
+        
 
 def find_references(p: Tag, processing) -> ReferenceHub:
-    reference_hub = ReferenceHub
+    reference_hub = ReferenceHub()
     for a in p.find_all("a"):
         if a.get("href") is not None:
             citation_link = a.get("href")
@@ -422,7 +430,7 @@ def find_references(p: Tag, processing) -> ReferenceHub:
                     right_text = ""
             
             citation_text = left_text + citation_number + right_text
-            reference_hub[citation_link] = Reference(text=citation_text)
+            reference_hub.references[citation_link] = Reference(text=citation_text)
             #temp = {"citation_link": citation_link, "citation_text": citation_text, "citation_number": citation_number}
             if "https://statutes.capitol.texas.gov" not in citation_link:
                 processing['unknown_reference_corpus_in_node_text'] = True
