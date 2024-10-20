@@ -121,6 +121,10 @@ There are different ways to run the SQL file. I recommend using psql. Below are 
 #### Prerequesites
 1. Postgres is installed
 2. PSQL is usable
+3. Make sure you enable pgvector in your database with:
+```sql
+CREATE EXTENSION vector;
+```
 
 #### Running the SQL File
 Open Terminal or Command Prompt
