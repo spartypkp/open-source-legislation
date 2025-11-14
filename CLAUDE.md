@@ -1,5 +1,16 @@
 # CLAUDE.md
 
+> ⚠️ **PROJECT ARCHIVED - NO LONGER MAINTAINED**
+>
+> This project is no longer actively developed or supported. All SQL download links are broken,
+> the infrastructure has been shut down, and scrapers may be outdated. This documentation is
+> preserved as a technical reference for the architecture that was built, but should not be
+> treated as guidance for an active project.
+>
+> See [README.md](README.md) for the full deprecation notice.
+
+---
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
